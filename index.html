@@ -553,7 +553,7 @@ function render() {
     <div class="stat-card"><div class="stat-num">${counts['Live']||0}</div><div class="stat-label">Live</div></div>
     <div class="stat-card"><div class="stat-num">${counts['Paused']||0}</div><div class="stat-label">Paused</div></div>
     <div class="stat-card"><div class="stat-num">${counts['Cancelled']||0}</div><div class="stat-label">Cancelled</div></div>
-    <div class="stat-card"><div class="stat-num">${merchants.filter(m=>m.onboardingStatus==='All modules covered' || m.status==='Live').length}</div><div class="stat-label">Fully Onboarded</div></div>
+    <div class="stat-card"><div class="stat-num">${merchants.filter(m=>m.status==='Live').length}</div><div class="stat-label">Fully Onboarded</div></div>
   `;
 
   ['All',...STATUSES].forEach(s => {
