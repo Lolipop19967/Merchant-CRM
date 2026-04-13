@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <!--
 NOTE FOR DEVELOPERS:
 
@@ -226,10 +225,10 @@ td.name { font-weight: 500; color: var(--text); }
   <div class="sidebar-section">
     <div class="sidebar-label">Navigation</div>
     <div class="sidebar-item active" id="nav-merchants" onclick="showPage('merchants')">
-      <span> Merchants</span>
+      <span>Merchants</span>
     </div>
     <div class="sidebar-item" id="nav-branded-app" onclick="showPage('branded-app')">
-      <span> Custom Branded App</span>
+      <span>Custom Branded App</span>
     </div>
   </div>
 
@@ -277,7 +276,7 @@ td.name { font-weight: 500; color: var(--text); }
 <!-- MAIN -->
 <div class="main">
   <div id="configBanner" class="config-banner" style="display:none">
-    ⚙️ Firebase not configured. Data saved locally.
+    Firebase not configured. Data saved locally.
   </div>
 
   <!-- MERCHANTS PAGE -->
@@ -367,7 +366,7 @@ td.name { font-weight: 500; color: var(--text); }
   <!-- BRANDED APP PAGE -->
   <div class="page" id="page-branded-app">
     <div class="topbar">
-      <span class="topbar-title"> Custom Branded App</span>
+      <span class="topbar-title">Custom Branded App</span>
       <div style="flex:1"></div>
       <select class="filter-select" id="ba-filter-group" onchange="renderBrandedApp()">
         <option value="">All Groups</option>
@@ -399,12 +398,12 @@ td.name { font-weight: 500; color: var(--text); }
         <h2 id="modalTitle">New Merchant</h2>
         <p id="modalId">New record</p>
       </div>
-      <button class="close-btn" onclick="closeModal()">✕</button>
+      <button class="close-btn" onclick="closeModal()"></button>
     </div>
     <div class="modal-tabs">
       <div class="modal-tab active" onclick="switchTab('details')">Details</div>
-      <div class="modal-tab" onclick="switchTab('brandedapp')"> Branded App</div>
-      <div class="modal-tab" onclick="switchTab('notesdocs')"> Notes & Docs</div>
+      <div class="modal-tab" onclick="switchTab('brandedapp')">Branded App</div>
+      <div class="modal-tab" onclick="switchTab('notesdocs')">Notes & Docs</div>
     </div>
     <div class="modal-body">
 
@@ -556,12 +555,12 @@ td.name { font-weight: 500; color: var(--text); }
           <div class="form-section-title">Developer Accounts</div>
           <div class="ba-section">
             <div class="ba-row">
-              <div class="ba-row-label" style="min-width:150px"> iOS Dev Account</div>
+              <div class="ba-row-label" style="min-width:150px">iOS Dev Account</div>
               <span class="screen-badge" id="ba-devios" onclick="toggleBadge('ba-devios','s-ios')">Created</span>
               <input type="text" id="ba-devios-notes" class="notes-input" placeholder="Notes…">
             </div>
             <div class="ba-row">
-              <div class="ba-row-label" style="min-width:150px"> Android Dev Account</div>
+              <div class="ba-row-label" style="min-width:150px">Android Dev Account</div>
               <span class="screen-badge" id="ba-devandroid" onclick="toggleBadge('ba-devandroid','s-android')">Created</span>
               <input type="text" id="ba-devandroid-notes" class="notes-input" placeholder="Notes…">
             </div>
@@ -572,12 +571,12 @@ td.name { font-weight: 500; color: var(--text); }
           <div class="form-section-title">Publish</div>
           <div class="ba-section">
             <div class="ba-row">
-              <div class="ba-row-label" style="min-width:150px"> iOS</div>
+              <div class="ba-row-label" style="min-width:150px">iOS</div>
               <span class="screen-badge" id="ba-pubios" onclick="toggleBadge('ba-pubios','s-ios')">Published</span>
               <input type="text" id="ba-ios-link" class="link-input" placeholder="App Store link…">
             </div>
             <div class="ba-row">
-              <div class="ba-row-label" style="min-width:150px"> Android</div>
+              <div class="ba-row-label" style="min-width:150px">Android</div>
               <span class="screen-badge" id="ba-pubandroid" onclick="toggleBadge('ba-pubandroid','s-android')">Published</span>
               <input type="text" id="ba-android-link" class="link-input" placeholder="Play Store link…">
             </div>
@@ -591,9 +590,9 @@ td.name { font-weight: 500; color: var(--text); }
           <div class="form-section-title">Attached Documents</div>
           <div class="doc-list" id="docList"></div>
           <div class="doc-btns">
-            <label class="doc-btn"> Add Word Doc <input type="file" accept=".doc,.docx" onchange="addDoc(event,'doc')" style="display:none"></label>
-            <label class="doc-btn"> Add Image <input type="file" accept="image/*" onchange="addDoc(event,'img')" style="display:none"></label>
-            <label class="doc-btn"> Add PDF <input type="file" accept=".pdf" onchange="addDoc(event,'pdf')" style="display:none"></label>
+            <label class="doc-btn">Add Word Doc <input type="file" accept=".doc,.docx" onchange="addDoc(event,'doc')" style="display:none"></label>
+            <label class="doc-btn">Add Image <input type="file" accept="image/*" onchange="addDoc(event,'img')" style="display:none"></label>
+            <label class="doc-btn">Add PDF <input type="file" accept=".pdf" onchange="addDoc(event,'pdf')" style="display:none"></label>
           </div>
         </div>
         <div class="form-section">
@@ -717,13 +716,6 @@ function switchTab(id) {
 function toggleBadge(id, cls) {
   const el = document.getElementById(id);
   if(!el) return;
-  ['s-sent','s-approved','s-ios','s-android'].forEach(c=>el.classList.remove(c));
-  if(!el._wasActive) { el.classList.add(cls); el._wasActive=true; } else { el._wasActive=false; }
-}
-// Fixed toggle — use class check
-function toggleBadge(id, cls) {
-  const el = document.getElementById(id);
-  if(!el) return;
   const wasActive = el.classList.contains(cls);
   ['s-sent','s-approved','s-ios','s-android'].forEach(c=>el.classList.remove(c));
   if(!wasActive) el.classList.add(cls);
@@ -743,6 +735,17 @@ function setGroupFilter(g) {
   render();
 }
 
+function getEffectiveMonth(m) {
+  // Live merchants: locked to their liveMonth (or month if liveMonth not set)
+  // Non-Live merchants: always show in current calendar month (auto-roll forward)
+  if (m.status === 'Live') {
+    return m.liveMonth || m.month || '';
+  } else {
+    // Non-live: use current month (always "present")
+    return String(new Date().getMonth() + 1);
+  }
+}
+
 function getFiltered() {
   const q = (document.getElementById('search')?.value||'').toLowerCase();
   const gf = document.getElementById('filter-group')?.value||'';
@@ -752,7 +755,7 @@ function getFiltered() {
     const mq = !q || (m.merchantName||'').toLowerCase().includes(q)||(m.oldSoftware||'').toLowerCase().includes(q)||(m.website||'').toLowerCase().includes(q);
     const ms = activeStatusFilter==='All' || m.status===activeStatusFilter;
     const mg2 = !gf || m.group===gf;
-    const mm = !mf || String(m.month)===mf;
+    const mm = !mf || getEffectiveMonth(m) === mf;
     const ma = !af || m.assignee===af;
     return mq && ms && mg2 && mm && ma;
   });
@@ -864,8 +867,8 @@ function renderBrandedApp() {
         <div class="app-row"><span class="app-row-label">Overall Status</span><span class="app-row-val" style="color:${stColor}">${st}</span></div>
         <div class="app-row"><span class="app-row-label">Screen</span><span class="app-row-val" style="font-size:11px">${ba.screenSent?'<span style="color:var(--amber)">Sent</span> ':''} ${ba.screenApproved?'<span style="color:var(--green)">Approved</span>':''} ${!ba.screenSent&&!ba.screenApproved?'<span style="color:var(--text3)">—</span>':''}</span></div>
         <div class="app-row"><span class="app-row-label">Dev Accounts</span><span class="app-row-val" style="font-size:11px">${ba.devIos?'<span style="color:var(--blue)">iOS</span> ':''} ${ba.devAndroid?'<span style="color:var(--teal)">Android</span>':''} ${!ba.devIos&&!ba.devAndroid?'<span style="color:var(--text3)">—</span>':''}</span></div>
-        <div class="app-row"><span class="app-row-label"> iOS Link</span>${ba.iosLink?`<a href="${ba.iosLink}" target="_blank" class="app-link" onclick="event.stopPropagation()">${ba.iosLink.replace(/^https?:\/\//,'')}</a>`:'<span style="color:var(--text3);font-size:12px">—</span>'}</div>
-        <div class="app-row"><span class="app-row-label"> Android Link</span>${ba.androidLink?`<a href="${ba.androidLink}" target="_blank" class="app-link" onclick="event.stopPropagation()">${ba.androidLink.replace(/^https?:\/\//,'')}</a>`:'<span style="color:var(--text3);font-size:12px">—</span>'}</div>
+        <div class="app-row"><span class="app-row-label">iOS Link</span>${ba.iosLink?`<a href="${ba.iosLink}" target="_blank" class="app-link" onclick="event.stopPropagation()">${ba.iosLink.replace(/^https?:\/\//,'')}</a>`:'<span style="color:var(--text3);font-size:12px">—</span>'}</div>
+        <div class="app-row"><span class="app-row-label">Android Link</span>${ba.androidLink?`<a href="${ba.androidLink}" target="_blank" class="app-link" onclick="event.stopPropagation()">${ba.androidLink.replace(/^https?:\/\//,'')}</a>`:'<span style="color:var(--text3);font-size:12px">—</span>'}</div>
         ${m.assignee?`<div class="app-row"><span class="app-row-label">Assigned To</span><span class="app-row-val">${m.assignee}</span></div>`:''}
       </div>
     </div>`;
@@ -875,19 +878,112 @@ function renderBrandedApp() {
 // DOCS
 function addDoc(event, type) {
   const f = event.target.files[0]; if(!f) return;
-  pendingDocs.push({name:f.name, type, id:Date.now()});
-  renderDocList();
+  const id = Date.now();
+  const reader = new FileReader();
+
+  if (type === 'img') {
+    reader.onload = e => {
+      pendingDocs.push({name:f.name, type, id, dataUrl:e.target.result});
+      renderDocList();
+    };
+    reader.readAsDataURL(f);
+  } else if (type === 'doc') {
+    // Read as ArrayBuffer so we can extract text from docx
+    reader.onload = e => {
+      const ab = e.target.result;
+      // Store as base64 for download, extract text via basic XML parsing
+      const bytes = new Uint8Array(ab);
+      let binary = '';
+      bytes.forEach(b => binary += String.fromCharCode(b));
+      const b64 = btoa(binary);
+      // Try to extract text from docx (zip containing word/document.xml)
+      extractDocxText(ab).then(text => {
+        pendingDocs.push({name:f.name, type, id, b64, extractedText:text});
+        renderDocList();
+        if(text) {
+          const notesEl = document.getElementById('f-extraNotes');
+          if(notesEl && !notesEl.value.trim()) notesEl.value = text;
+          else if(notesEl && notesEl.value.trim()) notesEl.value += '\n\n--- ' + f.name + ' ---\n' + text;
+        }
+      });
+    };
+    reader.readAsArrayBuffer(f);
+  } else {
+    // PDF — store as base64 for download
+    reader.onload = e => {
+      const ab = e.target.result;
+      const bytes = new Uint8Array(ab);
+      let binary = '';
+      bytes.forEach(b => binary += String.fromCharCode(b));
+      const b64 = btoa(binary);
+      pendingDocs.push({name:f.name, type, id, b64});
+      renderDocList();
+    };
+    reader.readAsArrayBuffer(f);
+  }
   event.target.value='';
 }
+
+async function extractDocxText(arrayBuffer) {
+  try {
+    // docx is a ZIP — use DecompressionStream or manual zip parsing
+    // We'll use a simple approach: find word/document.xml in the zip
+    const bytes = new Uint8Array(arrayBuffer);
+    // Find "word/document.xml" in the zip central directory
+    const decoder = new TextDecoder('utf-8', {fatal:false});
+    const raw = decoder.decode(bytes);
+    // Extract XML content between w:t tags
+    const xmlMatch = raw.match(/word\/document\.xml/);
+    if (!xmlMatch) return '';
+    // Find the local file entry for document.xml
+    // PK signature = 0x504B0304
+    let text = '';
+    // Simple approach: find all w:t content in the raw bytes
+    const wtRegex = /<w:t[^>]*>([^<]*)<\/w:t>/g;
+    let m;
+    while((m = wtRegex.exec(raw)) !== null) {
+      text += m[1] + ' ';
+    }
+    return text.trim().substring(0, 5000); // cap at 5000 chars
+  } catch(e) {
+    return '';
+  }
+}
+
+function downloadDoc(id) {
+  const d = pendingDocs.find(x=>x.id===id);
+  if(!d) return;
+  if(d.dataUrl) {
+    const a = document.createElement('a'); a.href=d.dataUrl; a.download=d.name; a.click(); return;
+  }
+  if(d.b64) {
+    const binary = atob(d.b64);
+    const bytes = new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+    const mimeMap = {doc:'application/vnd.openxmlformats-officedocument.wordprocessingml.document', pdf:'application/pdf', img:'image/*'};
+    const blob = new Blob([bytes], {type: mimeMap[d.type]||'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=d.name; a.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
 function renderDocList(docs) {
   const list = docs||pendingDocs;
   const c = document.getElementById('docList');
   if(!list.length){c.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">No documents attached yet.</div>';return;}
-  const icons={doc:'',pdf:'',img:''};
+  const icons={doc:'[DOC]',pdf:'[PDF]',img:'[IMG]'};
+  const iconColors={doc:'var(--blue-bg)',pdf:'var(--red-bg)',img:'var(--green-bg)'};
   c.innerHTML=list.map(d=>`<div class="doc-item">
-    <div class="doc-icon">${icons[d.type]||'📎'}</div>
-    <div class="doc-meta"><div class="doc-name">${d.name}</div><div class="doc-type">${d.type.toUpperCase()}</div></div>
-    <button class="doc-remove" onclick="removeDoc(${d.id})">✕</button>
+    <div class="doc-icon" style="background:${iconColors[d.type]||'var(--bg3)'}">
+      ${d.type==='img'&&d.dataUrl ? `<img src="${d.dataUrl}" style="width:32px;height:32px;object-fit:cover;border-radius:4px">` : `<span style="font-size:10px;font-weight:600;color:var(--text2);font-family:'DM Mono',monospace">${d.type.toUpperCase()}</span>`}
+    </div>
+    <div class="doc-meta">
+      <div class="doc-name">${d.name}</div>
+      <div class="doc-type">${d.extractedText ? 'Text extracted' : d.b64||d.dataUrl ? 'Ready to download' : 'Stored'}</div>
+    </div>
+    <button onclick="downloadDoc(${d.id})" title="Download" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;transition:all 0.15s;margin-right:4px" onmouseover="this.style.background='var(--accent-bg)';this.style.color='var(--accent2)'" onmouseout="this.style.background='var(--bg3)';this.style.color='var(--text2)'">Download</button>
+    <button class="doc-remove" onclick="removeDoc(${d.id})">x</button>
   </div>`).join('');
 }
 function removeDoc(id){pendingDocs=pendingDocs.filter(d=>d.id!==id);renderDocList();}
@@ -977,8 +1073,23 @@ function saveMerchant() {
       androidLink:document.getElementById('ba-android-link').value.trim(),
     }
   };
-  if(editingId){const i=merchants.findIndex(x=>x.id===editingId);if(i>=0)merchants[i]={...merchants[i],...data};}
-  else{merchants.unshift({id:Date.now(),...data});}
+  if(editingId){
+    const i=merchants.findIndex(x=>x.id===editingId);
+    if(i>=0){
+      const prev=merchants[i];
+      if(data.status==='Live' && prev.status!=='Live'){
+        data.liveMonth=data.month||String(new Date().getMonth()+1);
+      } else if(data.status!=='Live'){
+        data.liveMonth='';
+      } else {
+        data.liveMonth=prev.liveMonth||data.month||'';
+      }
+      merchants[i]={...prev,...data};
+    }
+  } else {
+    if(data.status==='Live') data.liveMonth=data.month||String(new Date().getMonth()+1);
+    merchants.unshift({id:Date.now(),...data});
+  }
   saveData(()=>{render();if(currentPage==='branded-app')renderBrandedApp();closeModal();});
 }
 
