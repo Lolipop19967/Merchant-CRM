@@ -1366,8 +1366,8 @@
     <!-- Tabs inside modal for different sections -->
     <div class="modal-tabs">
       <div class="modal-tab active" onclick="switchTab('details')">Details</div>
-      <div class="modal-tab" onclick="switchTab('brandedapp')">📱 Branded App</div>
-      <div class="modal-tab" onclick="switchTab('notesdocs')">📎 Notes & Docs</div>
+      <div class="modal-tab" onclick="switchTab('brandedapp')"> Branded App</div>
+      <div class="modal-tab" onclick="switchTab('notesdocs')"> Notes & Docs</div>
     </div>
     <!-- Modal body with form sections -->
     <div class="modal-body">
@@ -1585,9 +1585,9 @@
           <div class="doc-list" id="docList"></div>
           <!-- Buttons to add docs -->
           <div class="doc-btns">
-            <label class="doc-btn">📄 Add Word Doc <input type="file" accept=".doc,.docx" onchange="addDoc(event,'doc')" style="display:none" /></label>
-            <label class="doc-btn">🖼️ Add Image <input type="file" accept="image/*" onchange="addDoc(event,'img')" style="display:none" /></label>
-            <label class="doc-btn">📋 Add PDF <input type="file" accept=".pdf" onchange="addDoc(event,'pdf')" style="display:none" /></label>
+            <label class="doc-btn"> Add Word Doc <input type="file" accept=".doc,.docx" onchange="addDoc(event,'doc')" style="display:none" /></label>
+            <label class="doc-btn"> Add Image <input type="file" accept="image/*" onchange="addDoc(event,'img')" style="display:none" /></label>
+            <label class="doc-btn"> Add PDF <input type="file" accept=".pdf" onchange="addDoc(event,'pdf')" style="display:none" /></label>
           </div>
         </div>
         <!-- Extra notes textarea -->
@@ -1927,8 +1927,8 @@
           <div class="app-row"><span class="app-row-label">Overall Status</span><span class="app-row-val" style="color:${stColor}">${st}</span></div>
           <div class="app-row"><span class="app-row-label">Screen</span><span class="app-row-val" style="font-size:11px">${ba.screenSent ? '<span style="color:var(--amber)">Sent</span> ' : ''} ${ba.screenApproved ? '<span style="color:var(--green)">Approved</span>' : ''} ${!ba.screenSent && !ba.screenApproved ? '<span style="color:var(--text3)">—</span>' : ''}</span></div>
           <div class="app-row"><span class="app-row-label">Dev Accounts</span><span class="app-row-val" style="font-size:11px">${ba.devIos ? '<span style="color:var(--blue)">iOS</span> ' : ''} ${ba.devAndroid ? '<span style="color:var(--teal)">Android</span>' : ''} ${!ba.devIos && !ba.devAndroid ? '<span style="color:var(--text3)">—</span>' : ''}</span></div>
-          <div class="app-row"><span class="app-row-label">🍎 iOS Link</span>${ba.iosLink ? `<a href="${ba.iosLink}" target="_blank" class="app-link" onclick="event.stopPropagation()">${ba.iosLink.replace(/^https?:\/\//, '')}</a>` : '<span style="color:var(--text3);font-size:12px">—</span>'}</div>
-          <div class="app-row"><span class="app-row-label">🤖 Android Link</span>${ba.androidLink ? `<a href="${ba.androidLink}" target="_blank" class="app-link" onclick="event.stopPropagation()">${ba.androidLink.replace(/^https?:\/\//, '')}</a>` : '<span style="color:var(--text3);font-size:12px">—</span>'}</div>
+          <div class="app-row"><span class="app-row-label"> iOS Link</span>${ba.iosLink ? `<a href="${ba.iosLink}" target="_blank" class="app-link" onclick="event.stopPropagation()">${ba.iosLink.replace(/^https?:\/\//, '')}</a>` : '<span style="color:var(--text3);font-size:12px">—</span>'}</div>
+          <div class="app-row"><span class="app-row-label"> Android Link</span>${ba.androidLink ? `<a href="${ba.androidLink}" target="_blank" class="app-link" onclick="event.stopPropagation()">${ba.androidLink.replace(/^https?:\/\//, '')}</a>` : '<span style="color:var(--text3);font-size:12px">—</span>'}</div>
           ${m.assignee ? `<div class="app-row"><span class="app-row-label">Assigned To</span><span class="app-row-val">${m.assignee}</span></div>` : ''}
         </div>
       </div>`;
@@ -1952,7 +1952,7 @@
       c.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">No documents attached yet.</div>';
       return;
     }
-    const icons = { doc: '📄', pdf: '📋', img: '🖼️' };
+    const icons = { doc: '', pdf: '', img: '' };
     c.innerHTML = list.map(d => `
       <div class="doc-item">
         <div class="doc-icon">${icons[d.type] || '📎'}</div>
