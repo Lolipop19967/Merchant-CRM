@@ -940,17 +940,28 @@ function downloadDoc(id) {
   const d = pendingDocs.find(x=>x.id===id);
   if(!d) return;
   if(d.dataUrl) {
-    const a = document.createElement('a'); a.href=d.dataUrl; a.download=d.name; a.click(); return;
+    const a = document.createElement('a');
+    a.href = d.dataUrl;
+    a.download = d.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return;
   }
   if(d.b64) {
     const binary = atob(d.b64);
     const bytes = new Uint8Array(binary.length);
     for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
-    const mimeMap = {doc:'application/vnd.openxmlformats-officedocument.wordprocessingml.document', pdf:'application/pdf', img:'image/*'};
+    const mimeMap = {doc:'application/vnd.openxmlformats-officedocument.wordprocessingml.document', pdf:'application/pdf', img:'image/png'};
     const blob = new Blob([bytes], {type: mimeMap[d.type]||'application/octet-stream'});
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=url; a.download=d.name; a.click();
-    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = d.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 }
 
