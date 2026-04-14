@@ -633,7 +633,7 @@ const FIREBASE_CONFIG = {
 const STATUSES = ['In Progress','Live','Paused','Cancelled'];
 const MONTHS = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
 const TZ = ['EST','CST','MST','PST','AEDT','BST','UTC-12','UTC-11','UTC-10','UTC-9','UTC-8 (PT)','UTC-7 (MT)','UTC-6 (CT)','UTC-5 (ET)','UTC-4','UTC-3','UTC-2','UTC-1','UTC+0','UTC+1','UTC+2 (SAST)','UTC+3','UTC+4','UTC+5','UTC+5:30','UTC+6','UTC+7','UTC+8','UTC+9','UTC+10','UTC+11','UTC+12'];
-const MODULES = ['Staff','Roles','Company','Services','Classes','Memberships','Schedules','Promotions','Customer','Leads','Automations','Cancellation Policy','Featured Items','Products','Resources','POS','Payments','Positions','Branch'];
+const MODULES = ['Staff','Roles','Company','Services','Classes','Memberships','Schedules','Promotions','Customer','Leads','Automations','Cancellation Policy','Featured Items','Products','Resources','POS','Payments','Positions','Branch','Marketing'];
 
 let merchants = [], activeStatusFilter = 'All', db = null, dbRef = null, useFirebase = false;
 let editingId = null, pendingDocs = [], currentPage = 'merchants';
@@ -736,12 +736,9 @@ function setGroupFilter(g) {
 }
 
 function getEffectiveMonth(m) {
-  // Live merchants: locked to their liveMonth (or month if liveMonth not set)
-  // Non-Live merchants: always show in current calendar month (auto-roll forward)
   if (m.status === 'Live') {
     return m.liveMonth || m.month || '';
   } else {
-    // Non-live: use current month (always "present")
     return String(new Date().getMonth() + 1);
   }
 }
@@ -888,15 +885,12 @@ function addDoc(event, type) {
     };
     reader.readAsDataURL(f);
   } else if (type === 'doc') {
-    // Read as ArrayBuffer so we can extract text from docx
     reader.onload = e => {
       const ab = e.target.result;
-      // Store as base64 for download, extract text via basic XML parsing
       const bytes = new Uint8Array(ab);
       let binary = '';
       bytes.forEach(b => binary += String.fromCharCode(b));
       const b64 = btoa(binary);
-      // Try to extract text from docx (zip containing word/document.xml)
       extractDocxText(ab).then(text => {
         pendingDocs.push({name:f.name, type, id, b64, extractedText:text});
         renderDocList();
@@ -909,7 +903,6 @@ function addDoc(event, type) {
     };
     reader.readAsArrayBuffer(f);
   } else {
-    // PDF — store as base64 for download
     reader.onload = e => {
       const ab = e.target.result;
       const bytes = new Uint8Array(ab);
@@ -926,25 +919,18 @@ function addDoc(event, type) {
 
 async function extractDocxText(arrayBuffer) {
   try {
-    // docx is a ZIP — use DecompressionStream or manual zip parsing
-    // We'll use a simple approach: find word/document.xml in the zip
     const bytes = new Uint8Array(arrayBuffer);
-    // Find "word/document.xml" in the zip central directory
     const decoder = new TextDecoder('utf-8', {fatal:false});
     const raw = decoder.decode(bytes);
-    // Extract XML content between w:t tags
     const xmlMatch = raw.match(/word\/document\.xml/);
     if (!xmlMatch) return '';
-    // Find the local file entry for document.xml
-    // PK signature = 0x504B0304
     let text = '';
-    // Simple approach: find all w:t content in the raw bytes
     const wtRegex = /<w:t[^>]*>([^<]*)<\/w:t>/g;
     let m;
     while((m = wtRegex.exec(raw)) !== null) {
       text += m[1] + ' ';
     }
-    return text.trim().substring(0, 5000); // cap at 5000 chars
+    return text.trim().substring(0, 5000);
   } catch(e) {
     return '';
   }
