@@ -739,85 +739,88 @@ MODULES.forEach(m => {
 });
 
 function migrateLocalData() {
-  // Migrate data from any older localStorage keys into mccrm_v5
   const oldKeys = ['mccrm', 'mccrm_v1', 'mccrm_v2', 'mccrm_v3', 'mccrm_v4'];
   if (!localStorage.getItem('mccrm_v5')) {
     for (const key of oldKeys) {
-      const old = localStorage.getItem(key);
-      if (old) {
-        try {
-          const parsed = JSON.parse(old);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            localStorage.setItem('mccrm_v5', old);
-            console.log('Migrated data from', key, '→ mccrm_v5 (', parsed.length, 'merchants)');
-            break;
-          }
-        } catch(e) {}
-      }
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key)||'null');
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localStorage.setItem('mccrm_v5', JSON.stringify(parsed));
+          break;
+        }
+      } catch(e) {}
     }
   }
+}
+
+function loadFromLocal() {
+  merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
+  render();
 }
 
 function initFirebase() {
   migrateLocalData();
 
   if (!FIREBASE_CONFIG.apiKey || !FIREBASE_CONFIG.databaseURL) {
-    document.getElementById('configBanner').style.display = 'flex';
     setSyncStatus('disconnected','Local storage only');
-    merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
-    render(); return;
+    loadFromLocal(); return;
   }
+
+  // --- STEP 1: Load data instantly via REST API (no auth needed for public rules) ---
+  setSyncStatus('syncing', 'Loading…');
+  const restURL = FIREBASE_CONFIG.databaseURL + '/merchants.json';
+
+  fetch(restURL)
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(d => {
+      if (d && typeof d === 'object' && !Array.isArray(d)) {
+        merchants = Object.keys(d).map(k => ({...d[k], _fbKey: k}));
+        localStorage.setItem('mccrm_v5', JSON.stringify(merchants));
+        setSyncStatus('connected', 'Connected · ' + merchants.length + ' merchants');
+      } else {
+        // Firebase empty – load from localStorage if we have data
+        merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
+        setSyncStatus('connected', merchants.length ? 'Local data loaded' : 'Connected – no data yet');
+      }
+      render();
+    })
+    .catch(err => {
+      console.warn('REST fetch failed:', err);
+      setSyncStatus('disconnected', 'Offline – using local data');
+      loadFromLocal();
+    });
+
+  // --- STEP 2: Also hook up the SDK for live updates & writes ---
   try {
     firebase.initializeApp(FIREBASE_CONFIG);
-    db = firebase.database(); dbRef = db.ref('merchants'); useFirebase = true;
-    setSyncStatus('syncing','Connecting…');
-
-    // Fallback: if Firebase doesn't respond in 5s, load from localStorage
-    let fbLoaded = false;
-    const fbTimeout = setTimeout(() => {
-      if (!fbLoaded) {
-        setSyncStatus('disconnected','Offline – using local data');
-        merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
-        render();
-      }
-    }, 5000);
+    db = firebase.database();
+    dbRef = db.ref('merchants');
+    useFirebase = true;
 
     dbRef.on('value', snap => {
-      fbLoaded = true;
-      clearTimeout(fbTimeout);
       const d = snap.val();
-      // If Firebase is empty but we have local data, push local data up
-      if (!d || Object.keys(d).length === 0) {
-        const local = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
-        if (local.length > 0) {
-          merchants = local;
-          setSyncStatus('syncing','Uploading local data…');
-          const obj = {};
-          merchants.forEach(m => { const k = m._fbKey||String(m.id); const c={...m}; delete c._fbKey; obj[k]=c; });
-          dbRef.set(obj).then(() => {
-            setSyncStatus('connected','Synced to Firebase');
-            render();
-          }).catch(() => {
-            setSyncStatus('disconnected','Upload failed – using local data');
-            render();
-          });
-          return;
+      if (d && typeof d === 'object') {
+        const updated = Object.keys(d).map(k => ({...d[k], _fbKey: k}));
+        // Only re-render if data actually changed
+        if (JSON.stringify(updated) !== JSON.stringify(merchants)) {
+          merchants = updated;
+          localStorage.setItem('mccrm_v5', JSON.stringify(merchants));
+          setSyncStatus('connected', 'Live · ' + merchants.length + ' merchants');
+          render();
         }
       }
-      merchants = d ? Object.keys(d).map(k=>({...d[k],_fbKey:k})) : [];
-      localStorage.setItem('mccrm_v5', JSON.stringify(merchants));
-      setSyncStatus('connected','Synced to Firebase');
-      render();
     }, err => {
-      setSyncStatus('disconnected','Sync error – using local data');
-      merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
-      render();
+      console.warn('SDK listener error:', err.code, err.message);
+      // REST already loaded data, so no need to do anything here
+      setSyncStatus('disconnected', 'Live sync off – data still saved locally');
     });
   } catch(e) {
-    document.getElementById('configBanner').style.display = 'flex';
-    setSyncStatus('disconnected','Config error – using local data');
-    merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
-    render();
+    console.warn('Firebase SDK init error:', e);
+    // REST data is already loaded above, writes will go to localStorage only
+    useFirebase = false;
   }
 }
 
@@ -828,11 +831,30 @@ function setSyncStatus(state, text) {
 
 function saveData(cb) {
   localStorage.setItem('mccrm_v5', JSON.stringify(merchants));
+  const obj = {};
+  merchants.forEach(m => { const k = m._fbKey||String(m.id); const c={...m}; delete c._fbKey; obj[k]=c; });
+
+  const restSave = (onOk, onFail) => {
+    fetch(FIREBASE_CONFIG.databaseURL + '/merchants.json', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(obj)
+    }).then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(onOk).catch(onFail);
+  };
+
   if (useFirebase && dbRef) {
     setSyncStatus('syncing','Saving…');
-    const obj = {};
-    merchants.forEach(m => { const k = m._fbKey||String(m.id); const c={...m}; delete c._fbKey; obj[k]=c; });
-    dbRef.set(obj).then(()=>{setSyncStatus('connected','Synced');if(cb)cb();}).catch(()=>{setSyncStatus('disconnected','Save failed');if(cb)cb();});
+    dbRef.set(obj)
+      .then(() => { setSyncStatus('connected','Synced'); if(cb)cb(); })
+      .catch(() => restSave(
+        () => { setSyncStatus('connected','Synced'); if(cb)cb(); },
+        () => { setSyncStatus('disconnected','Saved locally only'); if(cb)cb(); }
+      ));
+  } else if (FIREBASE_CONFIG.databaseURL) {
+    setSyncStatus('syncing','Saving…');
+    restSave(
+      () => { setSyncStatus('connected','Synced'); if(cb)cb(); },
+      () => { setSyncStatus('disconnected','Saved locally only'); if(cb)cb(); }
+    );
   } else { if(cb)cb(); }
 }
 
