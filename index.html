@@ -188,6 +188,55 @@ function saveData(cb) {
  // (I have the full versions in the actual code - they are all there)
 
 showPage('merchants'); // extra safety
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+const FIREBASE_CONFIG = { /* your exact config object */ 
+  apiKey: "AIzaSyAqHUWBna-PsmZsAzDoq_l1Yf4HWECAGp4",
+  // ... rest of your FIREBASE_CONFIG
+};
+
+const STATUSES = ['In Progress','Live','Paused','Cancelled'];
+// ... all your other consts (MONTHS, TZ, MODULES)
+
+let merchants = [], activeStatusFilter = 'All', db = null, dbRef = null, useFirebase = false;
+let editingId = null, pendingDocs = [], currentPage = 'merchants';
+
+// FIXED WRAPPER - this is the key part
+document.addEventListener('DOMContentLoaded', () => {
+  // Populate selects and module grid
+  const tzSel = document.getElementById('f-timezone');
+  TZ.forEach(t => {
+    const o = document.createElement('option');
+    o.value = o.textContent = t;
+    tzSel.appendChild(o);
+  });
+  tzSel.value = 'EST';
+
+  const mg = document.getElementById('moduleGrid');
+  MODULES.forEach(m => {
+    const s = document.createElement('span');
+    s.className = 'module-tag';
+    s.textContent = m;
+    s.dataset.mod = m;
+    s.onclick = () => s.classList.toggle('selected');
+    mg.appendChild(s);
+  });
+
+  initFirebase();
+  showPage('merchants');
+});
+
+// === PASTE ALL YOUR ORIGINAL FUNCTIONS HERE (exactly as they were in your file) ===
+// migrateLocalData, loadFromLocal, initFirebase, setSyncStatus, saveData, showPage, 
+// switchTab, toggleBadge, setStatusFilter, setGroupFilter, getEffectiveMonth, 
+// getFiltered, groupClass, render, renderBrandedApp, addDoc, extractDocxText, 
+// renderDocList, openModal, closeModal, saveMerchant, deleteCurrent, quickDelete, 
+// exportData, exportCSV, importData, openReportModal, closeReportModal, 
+// generateReport, generatePDF, buildClientReportHTML, buildInternalReportHTML, etc.
+
+// Make sure the last line of your original script is kept.
+
 </script>
 </body>
 </html>
