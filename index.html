@@ -738,7 +738,29 @@ MODULES.forEach(m => {
   mg.appendChild(s);
 });
 
+function migrateLocalData() {
+  // Migrate data from any older localStorage keys into mccrm_v5
+  const oldKeys = ['mccrm', 'mccrm_v1', 'mccrm_v2', 'mccrm_v3', 'mccrm_v4'];
+  if (!localStorage.getItem('mccrm_v5')) {
+    for (const key of oldKeys) {
+      const old = localStorage.getItem(key);
+      if (old) {
+        try {
+          const parsed = JSON.parse(old);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            localStorage.setItem('mccrm_v5', old);
+            console.log('Migrated data from', key, '→ mccrm_v5 (', parsed.length, 'merchants)');
+            break;
+          }
+        } catch(e) {}
+      }
+    }
+  }
+}
+
 function initFirebase() {
+  migrateLocalData();
+
   if (!FIREBASE_CONFIG.apiKey || !FIREBASE_CONFIG.databaseURL) {
     document.getElementById('configBanner').style.display = 'flex';
     setSyncStatus('disconnected','Local storage only');
@@ -749,20 +771,51 @@ function initFirebase() {
     firebase.initializeApp(FIREBASE_CONFIG);
     db = firebase.database(); dbRef = db.ref('merchants'); useFirebase = true;
     setSyncStatus('syncing','Connecting…');
+
+    // Fallback: if Firebase doesn't respond in 5s, load from localStorage
+    let fbLoaded = false;
+    const fbTimeout = setTimeout(() => {
+      if (!fbLoaded) {
+        setSyncStatus('disconnected','Offline – using local data');
+        merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
+        render();
+      }
+    }, 5000);
+
     dbRef.on('value', snap => {
+      fbLoaded = true;
+      clearTimeout(fbTimeout);
       const d = snap.val();
+      // If Firebase is empty but we have local data, push local data up
+      if (!d || Object.keys(d).length === 0) {
+        const local = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
+        if (local.length > 0) {
+          merchants = local;
+          setSyncStatus('syncing','Uploading local data…');
+          const obj = {};
+          merchants.forEach(m => { const k = m._fbKey||String(m.id); const c={...m}; delete c._fbKey; obj[k]=c; });
+          dbRef.set(obj).then(() => {
+            setSyncStatus('connected','Synced to Firebase');
+            render();
+          }).catch(() => {
+            setSyncStatus('disconnected','Upload failed – using local data');
+            render();
+          });
+          return;
+        }
+      }
       merchants = d ? Object.keys(d).map(k=>({...d[k],_fbKey:k})) : [];
       localStorage.setItem('mccrm_v5', JSON.stringify(merchants));
       setSyncStatus('connected','Synced to Firebase');
       render();
     }, err => {
-      setSyncStatus('disconnected','Sync error');
+      setSyncStatus('disconnected','Sync error – using local data');
       merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
       render();
     });
   } catch(e) {
     document.getElementById('configBanner').style.display = 'flex';
-    setSyncStatus('disconnected','Config error');
+    setSyncStatus('disconnected','Config error – using local data');
     merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
     render();
   }
