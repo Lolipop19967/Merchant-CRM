@@ -446,6 +446,11 @@ td.name { font-weight: 500; color: var(--text); }
     <div class="topbar">
       <span class="topbar-title">Credentials</span>
       <div style="flex:1"></div>
+      <label class="btn btn-ghost" style="cursor:pointer" title="Upload spreadsheet with Business Name + New Passwords columns">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Passwords
+        <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event)" style="display:none">
+      </label>
       <div class="search-wrap">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="cred-search" placeholder="Search merchants…" oninput="renderCredPage()">
@@ -776,6 +781,7 @@ td.name { font-weight: 500; color: var(--text); }
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
@@ -2078,6 +2084,129 @@ function downloadDocFixed(id) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 }
+
+
+// ─── PASSWORD SHEET IMPORT ───────────────────────────────────────────────────
+function normalizeName(s) {
+  return (s||'').toLowerCase()
+    .replace(/[^a-z0-9 ]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function fuzzyMatch(a, b) {
+  const na = normalizeName(a), nb = normalizeName(b);
+  if (na === nb) return 1;
+  if (na.includes(nb) || nb.includes(na)) return 0.9;
+  // word overlap score
+  const wa = new Set(na.split(' ')), wb = new Set(nb.split(' '));
+  const common = [...wa].filter(w => wb.has(w) && w.length > 2).length;
+  const total = Math.max(wa.size, wb.size);
+  return total > 0 ? common / total : 0;
+}
+
+function importPasswordSheet(event) {
+  const f = event.target.files[0];
+  if (!f) return;
+  event.target.value = '';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let rows = [];
+
+    if (f.name.toLowerCase().endsWith('.csv')) {
+      // Parse CSV
+      const text = e.target.result;
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+      function parseCSVLine(line) {
+        const res = []; let cur = ''; let inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const c = line[i];
+          if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else { inQ = !inQ; } }
+          else if (c === ',' && !inQ) { res.push(cur); cur = ''; }
+          else { cur += c; }
+        }
+        res.push(cur);
+        return res;
+      }
+      const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+      const nameIdx = headers.findIndex(h => h.includes('business') || h.includes('merchant') || h.includes('name'));
+      const passIdx = headers.findIndex(h => h.includes('pass') || h.includes('password'));
+      if (nameIdx < 0 || passIdx < 0) {
+        alert('Could not find "Business Name" and "Passwords" columns in the CSV.');
+        return;
+      }
+      rows = lines.slice(1).map(l => {
+        const cols = parseCSVLine(l);
+        return { name: (cols[nameIdx]||'').trim(), pass: (cols[passIdx]||'').trim() };
+      }).filter(r => r.name && r.pass);
+    } else {
+      // Parse XLSX
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      const sample = data[0] ? Object.keys(data[0]) : [];
+      const nameKey = sample.find(k => k.toLowerCase().includes('business') || k.toLowerCase().includes('merchant') || k.toLowerCase().includes('name'));
+      const passKey = sample.find(k => k.toLowerCase().includes('pass') || k.toLowerCase().includes('password'));
+      if (!nameKey || !passKey) {
+        alert('Could not find "Business Name" and "Passwords" columns in the spreadsheet.');
+        return;
+      }
+      rows = data.map(r => ({ name: String(r[nameKey]||'').trim(), pass: String(r[passKey]||'').trim() }))
+                 .filter(r => r.name && r.pass);
+    }
+
+    if (!rows.length) { alert('No data rows found in file.'); return; }
+
+    // Match rows to merchants
+    let matched = 0, skipped = 0;
+    const THRESHOLD = 0.6;
+
+    rows.forEach(row => {
+      let bestScore = 0, bestMerchant = null;
+      merchants.forEach(m => {
+        const score = fuzzyMatch(m.merchantName, row.name);
+        if (score > bestScore) { bestScore = score; bestMerchant = m; }
+      });
+
+      if (bestScore >= THRESHOLD && bestMerchant) {
+        // Set the password on the merchant's GHL credentials
+        // If they already have a ghlPass or ghlUser, update ghlPass
+        // Otherwise add as a credential card named "Imported Password"
+        if (bestMerchant.ghlUser || bestMerchant.ghlUrl || bestMerchant.ghlPass) {
+          bestMerchant.ghlPass = row.pass;
+        } else {
+          // Check if there's already an "Imported Password" card to update
+          const existing = (bestMerchant.credCards||[]).find(c => c.name === 'Imported Password');
+          if (existing) {
+            existing.pass = row.pass;
+          } else {
+            if (!bestMerchant.credCards) bestMerchant.credCards = [];
+            bestMerchant.credCards.push({ id: Date.now() + Math.random(), name: 'Imported Password', link: '', user: '', pass: row.pass });
+          }
+        }
+        matched++;
+      } else {
+        skipped++;
+      }
+    });
+
+    saveData(() => {
+      renderCredPage();
+      const msg = matched > 0
+        ? `Done! ${matched} merchant${matched>1?'s':''} updated.${skipped > 0 ? ' ' + skipped + ' row(s) had no matching merchant.' : ''}`
+        : 'No merchants matched. Check that business names in the spreadsheet match merchant names in the CRM.';
+      alert(msg);
+    });
+  };
+
+  if (f.name.toLowerCase().endsWith('.csv')) {
+    reader.readAsText(f);
+  } else {
+    reader.readAsArrayBuffer(f);
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 initFirebase();
 </script>
