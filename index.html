@@ -209,6 +209,33 @@ td.name { font-weight: 500; color: var(--text); }
 .empty { padding: 60px 20px; text-align: center; color: var(--text3); }
 .empty h3 { font-size: 15px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
 
+/* REPORT MODAL */
+.rpt-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.rpt-overlay.open { opacity: 1; pointer-events: all; }
+.rpt-modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); width: 100%; max-width: 480px; padding: 0; overflow: hidden; }
+.rpt-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.rpt-header h2 { font-size: 15px; font-weight: 600; }
+.rpt-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.rpt-section-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.rpt-month-row { display: flex; align-items: center; gap: 10px; }
+.rpt-month-row label { font-size: 13px; color: var(--text2); flex-shrink: 0; }
+.rpt-month-row select { padding: 8px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; flex: 1; }
+.rpt-month-row select:focus { outline: none; border-color: var(--accent); }
+.rpt-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rpt-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.rpt-card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.rpt-card-sub { font-size: 11px; color: var(--text3); line-height: 1.5; }
+.rpt-card-btns { display: flex; gap: 6px; margin-top: 4px; }
+.rpt-btn { flex: 1; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border2); background: var(--bg2); color: var(--text2); font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.rpt-btn:hover { background: var(--accent-bg); border-color: rgba(124,108,250,0.4); color: var(--accent2); }
+.rpt-btn.pdf { border-color: rgba(248,113,113,0.3); color: var(--red); }
+.rpt-btn.pdf:hover { background: var(--red-bg); border-color: var(--red); }
+.rpt-btn.docx { border-color: rgba(96,165,250,0.3); color: var(--blue); }
+.rpt-btn.docx:hover { background: var(--blue-bg); border-color: var(--blue); }
+.rpt-footer { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.btn-green { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+.btn-green:hover { background: rgba(74,222,128,0.25); }
+
 @media(max-width:768px){ .sidebar{display:none} .stats-bar{flex-wrap:wrap} }
 </style>
 </head>
@@ -300,6 +327,10 @@ td.name { font-weight: 500; color: var(--text); }
         Import
         <input type="file" accept=".json,.csv,.tsv" onchange="importData(event)" style="display:none">
       </label>
+      <button class="btn btn-green" onclick="openReportModal()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Reports
+      </button>
       <button class="btn btn-primary" onclick="openModal()">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Merchant
@@ -390,7 +421,64 @@ td.name { font-weight: 500; color: var(--text); }
 </div>
 </div>
 
-<!-- MODAL -->
+<!-- REPORT MODAL -->
+<div class="rpt-overlay" id="rptOverlay" onclick="if(event.target===this)closeReportModal()">
+  <div class="rpt-modal">
+    <div class="rpt-header">
+      <h2>📄 Download Monthly Reports</h2>
+      <button class="close-btn" onclick="closeReportModal()">✕</button>
+    </div>
+    <div class="rpt-body">
+      <div>
+        <div class="rpt-section-label">Select Month to Report On</div>
+        <div class="rpt-month-row">
+          <label>Month:</label>
+          <select id="rpt-month">
+            <option value="0">— All Months —</option>
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+            <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="rpt-section-label">Choose Report Type</div>
+        <div class="rpt-cards">
+          <div class="rpt-card">
+            <div class="rpt-card-title">👤 Client Report</div>
+            <div class="rpt-card-sub">For the client — shows their onboarding progress, what's been done, what's still outstanding, and their current status.</div>
+            <div class="rpt-card-btns">
+              <button class="rpt-btn pdf" onclick="generateReport('client','pdf')">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF
+              </button>
+              <button class="rpt-btn docx" onclick="generateReport('client','docx')">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>DOCX
+              </button>
+            </div>
+          </div>
+          <div class="rpt-card">
+            <div class="rpt-card-title">🏢 Internal Report</div>
+            <div class="rpt-card-sub">For your team — shows which operator and onboarding specialist handled each client, what was done, and overall team performance.</div>
+            <div class="rpt-card-btns">
+              <button class="rpt-btn pdf" onclick="generateReport('internal','pdf')">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF
+              </button>
+              <button class="rpt-btn docx" onclick="generateReport('internal','docx')">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>DOCX
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="rpt-footer">
+      <button class="btn btn-ghost" onclick="closeReportModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MERCHANT MODAL -->
 <div class="overlay" id="overlay" onclick="overlayClick(event)">
   <div class="modal">
     <div class="modal-header">
@@ -1103,8 +1191,566 @@ function exportCSV(){
 }
 function importData(event){const f=event.target.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(!Array.isArray(d))throw 0;if(!confirm(`Import ${d.length} merchants? Replaces current data.`))return;merchants=d;saveData(()=>render());}catch{alert('Invalid JSON file.');}};r.readAsText(f);event.target.value='';}
 
+// REPORT MODAL
+function openReportModal() {
+  // Set current month as default
+  const cur = new Date().getMonth() + 1;
+  document.getElementById('rpt-month').value = String(cur);
+  document.getElementById('rptOverlay').classList.add('open');
+}
+function closeReportModal() { document.getElementById('rptOverlay').classList.remove('open'); }
+
+// Get merchants for a given month (0 = all)
+function getMerchantsForMonth(monthVal) {
+  if (!monthVal || monthVal === '0') return merchants;
+  return merchants.filter(m => getEffectiveMonth(m) === String(monthVal));
+}
+
+// ─── PDF GENERATION ───────────────────────────────────────────────────────────
+function generateReport(type, format) {
+  const monthVal = document.getElementById('rpt-month').value;
+  const monthName = monthVal === '0' ? 'All Months' : MONTHS[parseInt(monthVal)] || 'All Months';
+  const list = getMerchantsForMonth(monthVal);
+  const dateStr = new Date().toLocaleDateString('en-ZA', {day:'2-digit',month:'long',year:'numeric'});
+
+  if (format === 'pdf') {
+    generatePDF(type, list, monthName, dateStr);
+  } else {
+    generateDOCX(type, list, monthName, dateStr);
+  }
+}
+
+function generatePDF(type, list, monthName, dateStr) {
+  const html = type === 'client'
+    ? buildClientReportHTML(list, monthName, dateStr)
+    : buildInternalReportHTML(list, monthName, dateStr);
+
+  const win = window.open('', '_blank');
+  if (!win) { alert('Please allow pop-ups to download PDF reports.'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.onload = function() {
+    setTimeout(() => { win.focus(); win.print(); }, 500);
+  };
+}
+
+function statusColor(s) {
+  if (s === 'Live') return '#4ade80';
+  if (s === 'In Progress') return '#60a5fa';
+  if (s === 'Paused') return '#fbbf24';
+  if (s === 'Cancelled') return '#f87171';
+  return '#888';
+}
+
+function buildClientReportHTML(list, monthName, dateStr) {
+  const rows = list.map(m => {
+    const mods = (m.modules||[]);
+    const modsDone = mods.length;
+    const modsTotal = MODULES.length;
+    const pct = Math.round(modsDone / modsTotal * 100);
+    const remaining = MODULES.filter(mod => !mods.includes(mod));
+
+    const ba = m.brandedApp || {};
+    let appStatus = 'Not started';
+    if (ba.pubIos || ba.pubAndroid) appStatus = 'Published';
+    else if (ba.screenApproved) appStatus = 'Screen Approved';
+    else if (ba.screenSent) appStatus = 'Screen Sent';
+
+    const progressBar = `<div style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;margin:4px 0"><div style="height:100%;width:${pct}%;background:#4f46e5;border-radius:4px"></div></div>`;
+
+    return `
+      <div style="page-break-inside:avoid;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <h2 style="font-size:16px;font-weight:700;color:#111827;margin:0 0 4px">${m.merchantName || 'Unnamed Merchant'}</h2>
+            ${m.website ? `<div style="font-size:12px;color:#6b7280">${m.website}</div>` : ''}
+            ${m.group ? `<div style="font-size:12px;color:#6b7280;margin-top:2px">${m.group}</div>` : ''}
+          </div>
+          <span style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:99px;background:${statusColor(m.status)}20;color:${statusColor(m.status)};border:1px solid ${statusColor(m.status)}50">${m.status || '—'}</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div style="background:#f9fafb;border-radius:6px;padding:10px">
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:6px">Onboarding Progress</div>
+            <div style="font-size:22px;font-weight:700;color:#111827">${pct}%</div>
+            ${progressBar}
+            <div style="font-size:12px;color:#6b7280">${modsDone} of ${modsTotal} modules covered</div>
+          </div>
+          <div style="background:#f9fafb;border-radius:6px;padding:10px">
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:6px">Onboarding Session</div>
+            <div style="font-size:14px;font-weight:600;color:#111827">${m.onboardingStatus || 'Not started'}</div>
+            <div style="margin-top:4px;font-size:12px;color:#6b7280">Data Migration: <strong>${m.dataMigration || 'None'}</strong></div>
+            <div style="font-size:12px;color:#6b7280">Branded App: <strong>${appStatus}</strong></div>
+          </div>
+        </div>
+
+        ${mods.length ? `
+        <div style="margin-bottom:10px">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:6px">✅ Modules Completed (${modsDone})</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">${mods.map(mod=>`<span style="font-size:11px;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px">${mod}</span>`).join('')}</div>
+        </div>` : ''}
+
+        ${remaining.length ? `
+        <div style="margin-bottom:10px">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:6px">⏳ Modules Still to Cover (${remaining.length})</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">${remaining.map(mod=>`<span style="font-size:11px;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px">${mod}</span>`).join('')}</div>
+        </div>` : ''}
+
+        ${m.comments ? `<div style="background:#eff6ff;border-left:3px solid #3b82f6;padding:8px 12px;border-radius:0 6px 6px 0;margin-top:8px"><div style="font-size:10px;font-weight:600;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Notes from your specialist</div><div style="font-size:12px;color:#1e3a5f">${m.comments}</div></div>` : ''}
+        ${m.statusOfWork ? `<div style="background:#f0fdf4;border-left:3px solid #22c55e;padding:8px 12px;border-radius:0 6px 6px 0;margin-top:8px"><div style="font-size:10px;font-weight:600;color:#15803d;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Current Status of Work</div><div style="font-size:12px;color:#14532d">${m.statusOfWork}</div></div>` : ''}
+      </div>`;
+  }).join('');
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Client Onboarding Report — ${monthName}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#111827;padding:32px;max-width:800px;margin:0 auto}@media print{body{padding:16px}}</style>
+  </head><body>
+  <div style="text-align:center;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #e5e7eb">
+    <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;margin-bottom:8px">Merchant Onboarding CRM</div>
+    <h1 style="font-size:26px;font-weight:800;color:#111827;margin-bottom:6px">Your Onboarding Report</h1>
+    <div style="font-size:14px;color:#6b7280">Period: <strong>${monthName}</strong> &nbsp;|&nbsp; Generated: ${dateStr}</div>
+    <div style="font-size:13px;color:#6b7280;margin-top:4px">${list.length} merchant${list.length !== 1 ? 's' : ''} included in this report</div>
+  </div>
+  ${list.length === 0 ? '<p style="text-align:center;color:#6b7280;padding:40px">No merchants found for this period.</p>' : rows}
+  <div style="text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af">This report was generated by Merchant Onboarding CRM &bull; ${dateStr}</div>
+  </body></html>`;
+}
+
+function buildInternalReportHTML(list, monthName, dateStr) {
+  // Group by assignee
+  const byAssignee = {};
+  list.forEach(m => {
+    const key = m.assignee || 'Unassigned';
+    if (!byAssignee[key]) byAssignee[key] = [];
+    byAssignee[key].push(m);
+  });
+
+  const summary = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">
+      ${['In Progress','Live','Paused','Cancelled'].map(s => {
+        const cnt = list.filter(m => m.status === s).length;
+        return `<div style="text-align:center;background:#f9fafb;border-radius:8px;padding:12px;border:1px solid #e5e7eb">
+          <div style="font-size:22px;font-weight:700;color:${statusColor(s)}">${cnt}</div>
+          <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px">${s}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  const operatorSections = Object.entries(byAssignee).sort(([a],[b])=>a.localeCompare(b)).map(([name, ms]) => {
+    const liveCount = ms.filter(m=>m.status==='Live').length;
+    const ipCount = ms.filter(m=>m.status==='In Progress').length;
+    const avgPct = ms.length ? Math.round(ms.reduce((acc,m)=>acc+Math.round((m.modules||[]).length/MODULES.length*100),0)/ms.length) : 0;
+
+    const clientRows = ms.map(m => {
+      const mods = (m.modules||[]).length;
+      const pct = Math.round(mods/MODULES.length*100);
+      return `<tr>
+        <td style="padding:8px 10px;font-weight:600;color:#111827;font-size:13px">${m.merchantName||'—'}</td>
+        <td style="padding:8px 10px;font-size:12px"><span style="color:${statusColor(m.status)};font-weight:600">${m.status||'—'}</span></td>
+        <td style="padding:8px 10px;font-size:12px;color:#6b7280">${m.group||'—'}</td>
+        <td style="padding:8px 10px;font-size:12px;color:#374151">${m.onboardingStatus||'Not started'}</td>
+        <td style="padding:8px 10px;font-size:12px;color:#374151">${m.dataMigration||'None'}</td>
+        <td style="padding:8px 10px;font-size:12px"><span style="font-weight:600;color:${pct>=80?'#059669':pct>=50?'#d97706':'#dc2626'}">${pct}%</span> <span style="color:#9ca3af">(${mods}/${MODULES.length})</span></td>
+        <td style="padding:8px 10px;font-size:11px;color:#6b7280;max-width:160px">${m.comments||'—'}</td>
+      </tr>`;
+    }).join('');
+
+    return `
+      <div style="page-break-inside:avoid;margin-bottom:24px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+        <div style="background:#f9fafb;padding:14px 18px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:16px;font-weight:700;color:#111827">${name}</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:2px">${ms.length} client${ms.length!==1?'s':''} this period</div>
+          </div>
+          <div style="display:flex;gap:12px">
+            <div style="text-align:center"><div style="font-size:16px;font-weight:700;color:#4ade80">${liveCount}</div><div style="font-size:10px;color:#6b7280">Live</div></div>
+            <div style="text-align:center"><div style="font-size:16px;font-weight:700;color:#60a5fa">${ipCount}</div><div style="font-size:10px;color:#6b7280">In Progress</div></div>
+            <div style="text-align:center"><div style="font-size:16px;font-weight:700;color:#8b5cf6">${avgPct}%</div><div style="font-size:10px;color:#6b7280">Avg Progress</div></div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-family:'Segoe UI',Arial,sans-serif">
+            <thead>
+              <tr style="background:#f3f4f6;border-bottom:1px solid #e5e7eb">
+                <th style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;text-align:left">Client</th>
+                <th style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;text-align:left">Status</th>
+                <th style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;text-align:left">Group</th>
+                <th style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;text-align:left">Onboarding Stage</th>
+                <th style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;text-align:left">Data Mig.</th>
+                <th style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;text-align:left">Progress</th>
+                <th style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;text-align:left">Notes</th>
+              </tr>
+            </thead>
+            <tbody>${clientRows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Internal Team Report — ${monthName}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#111827;padding:32px;max-width:900px;margin:0 auto}@media print{body{padding:16px}tr:nth-child(even){background:#f9fafb}}</style>
+  </head><body>
+  <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e5e7eb">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;margin-bottom:6px">INTERNAL USE ONLY — Merchant Onboarding CRM</div>
+        <h1 style="font-size:24px;font-weight:800;color:#111827;margin-bottom:4px">Team Performance Report</h1>
+        <div style="font-size:13px;color:#6b7280">Period: <strong>${monthName}</strong> &nbsp;|&nbsp; Generated: ${dateStr}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:28px;font-weight:800;color:#4f46e5">${list.length}</div>
+        <div style="font-size:11px;color:#6b7280">Total Clients</div>
+      </div>
+    </div>
+  </div>
+  ${summary}
+  ${Object.keys(byAssignee).length === 0 ? '<p style="text-align:center;color:#6b7280;padding:40px">No merchants found for this period.</p>' : operatorSections}
+  <div style="text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;font-style:italic">CONFIDENTIAL — Internal Use Only &bull; Merchant Onboarding CRM &bull; ${dateStr}</div>
+  </body></html>`;
+}
+
+// ─── DOCX GENERATION ──────────────────────────────────────────────────────────
+function generateDOCX(type, list, monthName, dateStr) {
+  const content = type === 'client'
+    ? buildClientDocxContent(list, monthName, dateStr)
+    : buildInternalDocxContent(list, monthName, dateStr);
+
+  const docxXml = wrapDocx(content);
+  const filename = type === 'client'
+    ? `Client-Onboarding-Report-${monthName.replace(/\s/g,'-')}-${new Date().toISOString().slice(0,10)}.docx`
+    : `Internal-Team-Report-${monthName.replace(/\s/g,'-')}-${new Date().toISOString().slice(0,10)}.docx`;
+
+  downloadDocxBlob(docxXml, filename);
+}
+
+function para(text, opts = {}) {
+  const { bold = false, size = 22, color = '111827', spacing = 120, indent = 0, italic = false } = opts;
+  const rPr = `<w:rPr>${bold?'<w:b/>':''}${italic?'<w:i/>':''}<w:sz w:val="${size}"/><w:color w:val="${color}"/></w:rPr>`;
+  const pPr = `<w:pPr><w:spacing w:after="${spacing}"/>${indent?`<w:ind w:left="${indent}"/>`:''}
+    <w:rPr><w:sz w:val="${size}"/></w:rPr></w:pPr>`;
+  const escaped = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return `<w:p>${pPr}<w:r>${rPr}<w:t xml:space="preserve">${escaped}</w:t></w:r></w:p>`;
+}
+
+function heading1(text) { return para(text, { bold: true, size: 32, color: '111827', spacing: 160 }); }
+function heading2(text) { return para(text, { bold: true, size: 26, color: '1e40af', spacing: 120 }); }
+function heading3(text) { return para(text, { bold: true, size: 22, color: '374151', spacing: 100 }); }
+function subtext(text) { return para(text, { size: 18, color: '6b7280', spacing: 80 }); }
+function bodytext(text) { return para(text, { size: 20, color: '374151', spacing: 100 }); }
+function labelval(label, val) {
+  const lEsc = String(label).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const vEsc = String(val || '—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return `<w:p><w:pPr><w:spacing w:after="80"/></w:pPr>
+    <w:r><w:rPr><w:b/><w:sz w:val="20"/><w:color w:val="374151"/></w:rPr><w:t xml:space="preserve">${lEsc}: </w:t></w:r>
+    <w:r><w:rPr><w:sz w:val="20"/><w:color w:val="4b5563"/></w:rPr><w:t xml:space="preserve">${vEsc}</w:t></w:r>
+  </w:p>`;
+}
+function divider() {
+  return `<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="4" w:space="1" w:color="e5e7eb"/></w:pBdr><w:spacing w:after="160"/></w:pPr></w:p>`;
+}
+function spacer() { return `<w:p><w:pPr><w:spacing w:after="80"/></w:pPr></w:p>`; }
+
+function buildClientDocxContent(list, monthName, dateStr) {
+  let xml = '';
+  xml += heading1('Your Onboarding Report');
+  xml += subtext(`Period: ${monthName}   |   Generated: ${dateStr}   |   ${list.length} merchant(s) included`);
+  xml += divider();
+
+  if (list.length === 0) {
+    xml += bodytext('No merchants found for this period.');
+    return xml;
+  }
+
+  list.forEach(m => {
+    const mods = m.modules || [];
+    const pct = Math.round(mods.length / MODULES.length * 100);
+    const remaining = MODULES.filter(mod => !mods.includes(mod));
+    const ba = m.brandedApp || {};
+    let appStatus = 'Not started';
+    if (ba.pubIos || ba.pubAndroid) appStatus = 'Published';
+    else if (ba.screenApproved) appStatus = 'Screen Approved';
+    else if (ba.screenSent) appStatus = 'Screen Sent';
+
+    xml += heading2(m.merchantName || 'Unnamed Merchant');
+    if (m.website) xml += subtext(`Website: ${m.website}`);
+    if (m.group) xml += subtext(`Group: ${m.group}`);
+    xml += spacer();
+    xml += heading3('Current Status');
+    xml += labelval('Overall Status', m.status);
+    xml += labelval('Onboarding Stage', m.onboardingStatus || 'Not started');
+    xml += labelval('Data Migration', m.dataMigration || 'None');
+    xml += labelval('Payment Migration', m.paymentMigration || 'None');
+    xml += labelval('Widget Customization', m.widgetCustomization || 'None');
+    xml += labelval('Website Integration', m.websiteIntegration || 'None');
+    xml += labelval('Access Control', m.accessControl || 'None');
+    xml += labelval('Branded App Status', appStatus);
+    xml += spacer();
+    xml += heading3(`Onboarding Progress — ${pct}% Complete`);
+    xml += labelval('Modules Completed', `${mods.length} of ${MODULES.length}`);
+    if (mods.length) xml += bodytext('Completed: ' + mods.join(', '));
+    if (remaining.length) xml += bodytext('Still to cover: ' + remaining.join(', '));
+    xml += spacer();
+    if (m.comments) {
+      xml += heading3('Notes from Your Specialist');
+      xml += bodytext(m.comments);
+      xml += spacer();
+    }
+    if (m.statusOfWork) {
+      xml += heading3('Current Status of Work');
+      xml += bodytext(m.statusOfWork);
+      xml += spacer();
+    }
+    if (m.extraNotes) {
+      xml += heading3('Additional Notes');
+      xml += bodytext(m.extraNotes);
+      xml += spacer();
+    }
+    xml += divider();
+  });
+
+  xml += spacer();
+  xml += subtext('This report was generated by Merchant Onboarding CRM.');
+  return xml;
+}
+
+function buildInternalDocxContent(list, monthName, dateStr) {
+  const byAssignee = {};
+  list.forEach(m => {
+    const key = m.assignee || 'Unassigned';
+    if (!byAssignee[key]) byAssignee[key] = [];
+    byAssignee[key].push(m);
+  });
+
+  let xml = '';
+  xml += heading1('Team Performance Report');
+  xml += subtext(`INTERNAL USE ONLY   |   Period: ${monthName}   |   Generated: ${dateStr}`);
+  xml += divider();
+
+  // Summary
+  const live = list.filter(m=>m.status==='Live').length;
+  const ip = list.filter(m=>m.status==='In Progress').length;
+  const paused = list.filter(m=>m.status==='Paused').length;
+  const cancelled = list.filter(m=>m.status==='Cancelled').length;
+  xml += heading3('Overall Summary');
+  xml += labelval('Total Clients', list.length);
+  xml += labelval('Live', live);
+  xml += labelval('In Progress', ip);
+  xml += labelval('Paused', paused);
+  xml += labelval('Cancelled', cancelled);
+  xml += divider();
+
+  if (list.length === 0) {
+    xml += bodytext('No merchants found for this period.');
+    return xml;
+  }
+
+  Object.entries(byAssignee).sort(([a],[b])=>a.localeCompare(b)).forEach(([name, ms]) => {
+    const avgPct = ms.length ? Math.round(ms.reduce((acc,m)=>acc+Math.round((m.modules||[]).length/MODULES.length*100),0)/ms.length) : 0;
+    const liveC = ms.filter(m=>m.status==='Live').length;
+    const ipC = ms.filter(m=>m.status==='In Progress').length;
+
+    xml += heading2(`Operator / Specialist: ${name}`);
+    xml += bodytext(`Clients this period: ${ms.length}   |   Live: ${liveC}   |   In Progress: ${ipC}   |   Avg Progress: ${avgPct}%`);
+    xml += spacer();
+
+    ms.forEach(m => {
+      const mods = m.modules || [];
+      const pct = Math.round(mods.length / MODULES.length * 100);
+      xml += heading3(m.merchantName || 'Unnamed');
+      xml += labelval('Status', m.status);
+      xml += labelval('Group', m.group || '—');
+      xml += labelval('Onboarding Stage', m.onboardingStatus || 'Not started');
+      xml += labelval('Data Migration', m.dataMigration || 'None');
+      xml += labelval('Modules Covered', `${mods.length}/${MODULES.length} (${pct}%)`);
+      if (mods.length) xml += labelval('Modules Done', mods.join(', '));
+      if (m.comments) xml += labelval('Notes', m.comments);
+      if (m.statusOfWork) xml += labelval('Status of Work', m.statusOfWork);
+      xml += spacer();
+    });
+    xml += divider();
+  });
+
+  xml += spacer();
+  xml += subtext('CONFIDENTIAL — Internal Use Only. Merchant Onboarding CRM.');
+  return xml;
+}
+
+function wrapDocx(bodyContent) {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<w:body>
+<w:sectPr>
+  <w:pgSz w:w="12240" w:h="15840"/>
+  <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/>
+</w:sectPr>
+${bodyContent}
+</w:body>
+</w:document>`;
+}
+
+function downloadDocxBlob(xmlContent, filename) {
+  // Build a minimal valid DOCX (ZIP structure)
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+  const wordRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`;
+
+  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+  const zip = buildZip([
+    { name: '[Content_Types].xml', content: contentTypes },
+    { name: '_rels/.rels', content: rels },
+    { name: 'word/document.xml', content: xmlContent },
+    { name: 'word/_rels/document.xml.rels', content: wordRels },
+  ]);
+
+  const blob = new Blob([zip], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+// Minimal ZIP builder (no compression, stored)
+function buildZip(files) {
+  const enc = new TextEncoder();
+  const localHeaders = [];
+  const centralDir = [];
+  let offset = 0;
+
+  files.forEach(({ name, content }) => {
+    const nameBytes = enc.encode(name);
+    const dataBytes = enc.encode(content);
+    const crc = crc32(dataBytes);
+    const now = new Date();
+    const dosDate = ((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate();
+    const dosTime = (now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1);
+
+    const local = new Uint8Array(30 + nameBytes.length + dataBytes.length);
+    const dv = new DataView(local.buffer);
+    dv.setUint32(0, 0x504B0304, true); // sig
+    dv.setUint16(4, 20, true); // version
+    dv.setUint16(6, 0, true); // flags
+    dv.setUint16(8, 0, true); // compression (stored)
+    dv.setUint16(10, dosTime, true);
+    dv.setUint16(12, dosDate, true);
+    dv.setUint32(14, crc, true);
+    dv.setUint32(18, dataBytes.length, true);
+    dv.setUint32(22, dataBytes.length, true);
+    dv.setUint16(26, nameBytes.length, true);
+    dv.setUint16(28, 0, true);
+    local.set(nameBytes, 30);
+    local.set(dataBytes, 30 + nameBytes.length);
+
+    const central = new Uint8Array(46 + nameBytes.length);
+    const cdv = new DataView(central.buffer);
+    cdv.setUint32(0, 0x504B0102, true); // sig
+    cdv.setUint16(4, 20, true); cdv.setUint16(6, 20, true);
+    cdv.setUint16(8, 0, true); cdv.setUint16(10, 0, true);
+    cdv.setUint16(12, dosTime, true); cdv.setUint16(14, dosDate, true);
+    cdv.setUint32(16, crc, true);
+    cdv.setUint32(20, dataBytes.length, true);
+    cdv.setUint32(24, dataBytes.length, true);
+    cdv.setUint16(28, nameBytes.length, true);
+    cdv.setUint16(30, 0, true); cdv.setUint16(32, 0, true);
+    cdv.setUint16(34, 0, true); cdv.setUint32(36, 0, true);
+    cdv.setUint32(40, 0x20, true); // external attr
+    cdv.setUint32(42, offset, true);
+    central.set(nameBytes, 46);
+
+    localHeaders.push(local);
+    centralDir.push(central);
+    offset += local.length;
+  });
+
+  const cdOffset = offset;
+  const cdSize = centralDir.reduce((s,c)=>s+c.length,0);
+  const eocd = new Uint8Array(22);
+  const edv = new DataView(eocd.buffer);
+  edv.setUint32(0, 0x504B0506, true);
+  edv.setUint16(4, 0, true); edv.setUint16(6, 0, true);
+  edv.setUint16(8, files.length, true); edv.setUint16(10, files.length, true);
+  edv.setUint32(12, cdSize, true);
+  edv.setUint32(16, cdOffset, true);
+  edv.setUint16(20, 0, true);
+
+  const total = [...localHeaders, ...centralDir, eocd].reduce((s,a)=>s+a.length,0);
+  const out = new Uint8Array(total);
+  let pos = 0;
+  [...localHeaders, ...centralDir, eocd].forEach(a => { out.set(a, pos); pos += a.length; });
+  return out;
+}
+
+function crc32(data) {
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    table[i] = c;
+  }
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < data.length; i++) crc = (crc >>> 8) ^ table[(crc ^ data[i]) & 0xFF];
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+// ─── FIX: DOC DOWNLOAD FROM SAVED MERCHANT ───────────────────────────────────
+// Override renderDocList to work for both pendingDocs and saved merchant docs
+function renderDocList(docs) {
+  const list = docs !== undefined ? docs : pendingDocs;
+  const c = document.getElementById('docList');
+  if (!c) return;
+  if (!list.length) { c.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">No documents attached yet.</div>'; return; }
+  const iconColors = { doc: 'var(--blue-bg)', pdf: 'var(--red-bg)', img: 'var(--green-bg)' };
+  c.innerHTML = list.map(d => `<div class="doc-item">
+    <div class="doc-icon" style="background:${iconColors[d.type] || 'var(--bg3)'}">
+      ${d.type === 'img' && d.dataUrl ? `<img src="${d.dataUrl}" style="width:32px;height:32px;object-fit:cover;border-radius:4px">` : `<span style="font-size:10px;font-weight:600;color:var(--text2);font-family:'DM Mono',monospace">${(d.type||'?').toUpperCase()}</span>`}
+    </div>
+    <div class="doc-meta">
+      <div class="doc-name">${d.name}</div>
+      <div class="doc-type">${d.extractedText ? 'Text extracted' : d.b64 || d.dataUrl ? 'Ready to download' : 'Stored'}</div>
+    </div>
+    ${(d.b64 || d.dataUrl) ? `<button onclick="downloadDocFixed(${d.id})" title="Download" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;transition:all 0.15s;margin-right:4px" onmouseover="this.style.background='var(--accent-bg)';this.style.color='var(--accent2)'" onmouseout="this.style.background='var(--bg3)';this.style.color='var(--text2)'">⬇ Download</button>` : ''}
+    <button class="doc-remove" onclick="removeDoc(${d.id})">✕</button>
+  </div>`).join('');
+}
+
+function downloadDocFixed(id) {
+  // Search both pendingDocs and current merchant's saved docs
+  let d = pendingDocs.find(x => x.id === id);
+  if (!d && editingId) {
+    const m = merchants.find(x => x.id === editingId);
+    if (m && m.docs) d = m.docs.find(x => x.id === id);
+  }
+  if (!d) return;
+  if (d.dataUrl) {
+    const a = document.createElement('a'); a.href = d.dataUrl; a.download = d.name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); return;
+  }
+  if (d.b64) {
+    const binary = atob(d.b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const mimeMap = { doc: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', pdf: 'application/pdf', img: 'image/png' };
+    const blob = new Blob([bytes], { type: mimeMap[d.type] || 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = d.name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+}
+
 initFirebase();
-</script>
 </body>
 </html>
 
