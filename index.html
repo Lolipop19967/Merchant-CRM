@@ -872,7 +872,7 @@ function saveData(cb) {
     // Pause the live listener to prevent it overwriting our merchants array mid-write
     dbRef.off('value');
     const obj = {};
-    merchants.forEach(m => { const k = m._fbKey||String(m.id); const c={...m}; delete c._fbKey; obj[k]=c; });
+    merchants.forEach(m => { const k = (m._fbKey||String(m.id)).replace(/[.#$\/\[\]]/g,'_'); const c={...m}; delete c._fbKey; obj[k]=c; });
     dbRef.set(obj).then(() => {
       setSyncStatus('connected','Synced');
       if (cb) cb();
@@ -2201,14 +2201,14 @@ function importPasswordSheet(event) {
             existing.pass = row.pass;
           } else {
             if (!bestMerchant.credCards) bestMerchant.credCards = [];
-            bestMerchant.credCards.push({ id: Date.now() + Math.random(), name: 'Imported Password', link: '', user: '', pass: row.pass });
+            bestMerchant.credCards.push({ id: Date.now() + Math.floor(Math.random() * 1000), name: 'Imported Password', link: '', user: '', pass: row.pass });
           }
         }
         matched++;
       } else {
         // No match — create a new merchant with this name and password
         const newMerchant = {
-          id: Date.now() + Math.random(),
+          id: Date.now() + Math.floor(Math.random() * 1000),
           merchantName: row.name,
           status: 'In Progress',
           group: '',
