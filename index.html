@@ -1538,8 +1538,24 @@ function importData(event){
         return obj;
       }).filter(o=>o.merchantName||o.status);
       if(!d.length)throw new Error('No valid rows');
-      if(!confirm(`Import ${d.length} merchants from CSV? This will replace current data.`))return;
-      merchants=d;saveData(()=>{render();if(currentPage==='credentials')renderCredPage();});
+      if(merchants.length>0){
+        // MERGE: update existing by name, append new ones
+        let updated=0,added=0;
+        d.forEach(incoming=>{
+          const idx=merchants.findIndex(m=>
+            m.merchantName&&incoming.merchantName&&
+            m.merchantName.trim().toLowerCase()===incoming.merchantName.trim().toLowerCase()
+          );
+          if(idx>=0){merchants[idx]={...merchants[idx],...incoming};updated++;}
+          else{merchants.push(incoming);added++;}
+        });
+        saveData(()=>{render();if(currentPage==='credentials')renderCredPage();
+          alert(`Import complete!\n${updated} merchant${updated!==1?'s':''} updated, ${added} new merchant${added!==1?'s':''} added.`);
+        });
+      }else{
+        if(!confirm(`Import ${d.length} merchants from CSV?`))return;
+        merchants=d;saveData(()=>{render();if(currentPage==='credentials')renderCredPage();});
+      }
     }catch(err){
       alert('Could not import file. Please use a JSON backup or the exported CSV from this app.');
     }
