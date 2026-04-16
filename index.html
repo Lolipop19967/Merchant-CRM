@@ -307,17 +307,37 @@ td.name { font-weight: 500; color: var(--text); }
     <div class="sidebar-item" onclick="setGroupFilter('All')" id="fg-All">
       <span>All Groups</span><span class="count" id="fgc-All">0</span>
     </div>
-    <div class="sidebar-item" onclick="setGroupFilter('Group 1')" id="fg-Group 1">
-      <span>Group 1</span><span class="count" id="fgc-Group 1">0</span>
+    <div class="sidebar-item" id="fg-Group 1" style="position:relative">
+      <span onclick="setGroupFilter('Group 1')" style="flex:1;cursor:pointer">Group 1</span>
+      <label title="Upload Group 1 CSV" onclick="event.stopPropagation()" style="cursor:pointer;padding:2px 5px;border-radius:5px;color:#a78bfa;opacity:0.6;transition:opacity 0.15s;display:flex;align-items:center" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="importGroupCSV(event,'Group 1')" style="display:none">
+      </label>
+      <span class="count" id="fgc-Group 1">0</span>
     </div>
-    <div class="sidebar-item" onclick="setGroupFilter('Group 2')" id="fg-Group 2">
-      <span>Group 2</span><span class="count" id="fgc-Group 2">0</span>
+    <div class="sidebar-item" id="fg-Group 2" style="position:relative">
+      <span onclick="setGroupFilter('Group 2')" style="flex:1;cursor:pointer">Group 2</span>
+      <label title="Upload Group 2 CSV" onclick="event.stopPropagation()" style="cursor:pointer;padding:2px 5px;border-radius:5px;color:#fbbf24;opacity:0.6;transition:opacity 0.15s;display:flex;align-items:center" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="importGroupCSV(event,'Group 2')" style="display:none">
+      </label>
+      <span class="count" id="fgc-Group 2">0</span>
     </div>
-    <div class="sidebar-item" onclick="setGroupFilter('Group 3')" id="fg-Group 3">
-      <span>Group 3</span><span class="count" id="fgc-Group 3">0</span>
+    <div class="sidebar-item" id="fg-Group 3" style="position:relative">
+      <span onclick="setGroupFilter('Group 3')" style="flex:1;cursor:pointer">Group 3</span>
+      <label title="Upload Group 3 CSV" onclick="event.stopPropagation()" style="cursor:pointer;padding:2px 5px;border-radius:5px;color:#4ade80;opacity:0.6;transition:opacity 0.15s;display:flex;align-items:center" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="importGroupCSV(event,'Group 3')" style="display:none">
+      </label>
+      <span class="count" id="fgc-Group 3">0</span>
     </div>
-    <div class="sidebar-item" onclick="setGroupFilter('Group 4')" id="fg-Group 4">
-      <span>Group 4</span><span class="count" id="fgc-Group 4">0</span>
+    <div class="sidebar-item" id="fg-Group 4" style="position:relative">
+      <span onclick="setGroupFilter('Group 4')" style="flex:1;cursor:pointer">Group 4</span>
+      <label title="Upload Group 4 CSV" onclick="event.stopPropagation()" style="cursor:pointer;padding:2px 5px;border-radius:5px;color:#60a5fa;opacity:0.6;transition:opacity 0.15s;display:flex;align-items:center" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="importGroupCSV(event,'Group 4')" style="display:none">
+      </label>
+      <span class="count" id="fgc-Group 4">0</span>
     </div>
   </div>
 
@@ -451,29 +471,6 @@ td.name { font-weight: 500; color: var(--text); }
     <div class="topbar">
       <span class="topbar-title">Credentials</span>
       <div style="flex:1"></div>
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span style="font-size:11px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:0.06em">Upload by group:</span>
-        <label class="btn btn-ghost" style="cursor:pointer;font-size:12px;padding:6px 10px" title="Upload passwords for Group 1">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <span style="color:#a78bfa">G1</span>
-          <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event,'Group 1')" style="display:none">
-        </label>
-        <label class="btn btn-ghost" style="cursor:pointer;font-size:12px;padding:6px 10px" title="Upload passwords for Group 2">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <span style="color:#fbbf24">G2</span>
-          <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event,'Group 2')" style="display:none">
-        </label>
-        <label class="btn btn-ghost" style="cursor:pointer;font-size:12px;padding:6px 10px" title="Upload passwords for Group 3">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <span style="color:#4ade80">G3</span>
-          <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event,'Group 3')" style="display:none">
-        </label>
-        <label class="btn btn-ghost" style="cursor:pointer;font-size:12px;padding:6px 10px" title="Upload passwords for Group 4">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <span style="color:#60a5fa">G4</span>
-          <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event,'Group 4')" style="display:none">
-        </label>
-      </div>
       <div class="search-wrap">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="cred-search" placeholder="Search merchants…" oninput="renderCredPage()">
@@ -2279,6 +2276,179 @@ function importPasswordSheet(event, targetGroup) {
         ? `Done${groupLabel}! ${parts.join(', ')}.`
         : 'No data processed. Check that your file has "Business Name" and "Password" columns.';
       alert(msg);
+    });
+  };
+
+  if (f.name.toLowerCase().endsWith('.csv')) {
+    reader.readAsText(f);
+  } else {
+    reader.readAsArrayBuffer(f);
+  }
+}
+// ─── GROUP CSV IMPORT ────────────────────────────────────────────────────────
+function importGroupCSV(event, targetGroup) {
+  const f = event.target.files[0];
+  event.target.value = '';
+  if (!f) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let rows = [];
+
+    if (f.name.toLowerCase().endsWith('.csv')) {
+      const text = e.target.result;
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+
+      function parseCSVLine(line) {
+        const res = []; let cur = ''; let inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const c = line[i];
+          if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else { inQ = !inQ; } }
+          else if (c === ',' && !inQ) { res.push(cur); cur = ''; }
+          else { cur += c; }
+        }
+        res.push(cur);
+        return res;
+      }
+
+      const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+      const nameIdx = headers.findIndex(h => h.includes('merchant') || h.includes('business') || h.includes('name'));
+      const statusIdx = headers.findIndex(h => h === 'status');
+      const emailIdx = headers.findIndex(h => h.includes('contact') || h.includes('email'));
+      const notesIdx = headers.findIndex(h => h === 'notes');
+      const issuesIdx = headers.findIndex(h => h === "issues");
+      const pendingIdx = headers.findIndex(h => h.includes('pending'));
+      const completedIdx = headers.findIndex(h => h.includes('completed'));
+      const stripeIdx = headers.findIndex(h => h.includes('stripe'));
+      const accessIdx = headers.findIndex(h => h.includes('access'));
+      const websiteIdx = headers.findIndex(h => h.includes('website'));
+      const appIdx = headers.findIndex(h => h.includes('branded') || h.includes('app'));
+      const addonsIdx = headers.findIndex(h => h.includes('add') && h.includes('on'));
+      const goLiveIdx = headers.findIndex(h => h.includes('go') && h.includes('live') || h.includes('go-live'));
+      const crsIdx = headers.findIndex(h => h.includes("cr"));
+
+      if (nameIdx < 0) {
+        alert('Could not find a "Merchant Name" column in this CSV.');
+        return;
+      }
+
+      // Map CSV status to CRM status
+      function mapStatus(s) {
+        const sl = (s||'').toLowerCase().trim();
+        if (sl === 'completed' || sl === 'live') return 'Live';
+        if (sl === 'cancelled' || sl === 'canceled') return 'Cancelled';
+        if (sl === 'paused') return 'Paused';
+        return 'In Progress';
+      }
+
+      rows = lines.slice(1).map(line => {
+        const cols = parseCSVLine(line);
+        const name = (cols[nameIdx]||'').trim();
+        if (!name) return null;
+        const status = mapStatus(cols[statusIdx]);
+        const notes = [
+          notesIdx >= 0 && cols[notesIdx] ? 'Notes: ' + cols[notesIdx].trim() : '',
+          issuesIdx >= 0 && cols[issuesIdx] ? 'Issues: ' + cols[issuesIdx].trim() : '',
+          pendingIdx >= 0 && cols[pendingIdx] ? 'Pending: ' + cols[pendingIdx].trim() : '',
+          completedIdx >= 0 && cols[completedIdx] ? 'Completed: ' + cols[completedIdx].trim() : '',
+          crsIdx >= 0 && cols[crsIdx] ? "CR's: " + cols[crsIdx].trim() : '',
+        ].filter(Boolean).join('\n\n');
+        return {
+          name,
+          status,
+          email: emailIdx >= 0 ? (cols[emailIdx]||'').trim() : '',
+          notes,
+          stripeTerminal: stripeIdx >= 0 ? (cols[stripeIdx]||'').trim() : '',
+          accessControl: accessIdx >= 0 ? (cols[accessIdx]||'').trim() : '',
+          websiteManagement: websiteIdx >= 0 ? (cols[websiteIdx]||'').trim() : '',
+          brandedApp: appIdx >= 0 ? (cols[appIdx]||'').trim() : '',
+          addons: addonsIdx >= 0 ? (cols[addonsIdx]||'').trim() : '',
+        };
+      }).filter(Boolean);
+
+    } else {
+      // XLSX fallback
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      const sample = data[0] ? Object.keys(data[0]) : [];
+      const nameKey = sample.find(k => k.toLowerCase().includes('merchant') || k.toLowerCase().includes('business') || k.toLowerCase().includes('name'));
+      if (!nameKey) { alert('Could not find a "Merchant Name" column.'); return; }
+      const statusKey = sample.find(k => k.toLowerCase() === 'status') || '';
+      function mapStatus(s) {
+        const sl = (s||'').toLowerCase().trim();
+        if (sl === 'completed' || sl === 'live') return 'Live';
+        if (sl === 'cancelled' || sl === 'canceled') return 'Cancelled';
+        if (sl === 'paused') return 'Paused';
+        return 'In Progress';
+      }
+      rows = data.map(r => ({ name: String(r[nameKey]||'').trim(), status: mapStatus(r[statusKey]||''), email: '', notes: '' })).filter(r => r.name);
+    }
+
+    if (!rows.length) { alert('No data rows found in the file.'); return; }
+
+    let added = 0, updated = 0;
+
+    rows.forEach(row => {
+      // Check if merchant already exists in this group (by name fuzzy match)
+      let bestScore = 0, bestMerchant = null;
+      merchants.forEach(m => {
+        if (m.group !== targetGroup) return;
+        const score = fuzzyMatch(m.merchantName, row.name);
+        if (score > bestScore) { bestScore = score; bestMerchant = m; }
+      });
+
+      if (bestScore >= 0.8 && bestMerchant) {
+        // Update existing — only fill in blanks, don't overwrite filled fields
+        if (!bestMerchant.status || bestMerchant.status === 'In Progress') bestMerchant.status = row.status;
+        if (!bestMerchant.comments && row.notes) bestMerchant.comments = row.notes;
+        if (!bestMerchant.accessControl && row.accessControl) bestMerchant.accessControl = row.accessControl;
+        updated++;
+      } else {
+        // Add as new merchant
+        const isBrandedApp = /yes/i.test(row.brandedApp);
+        const newM = {
+          id: Date.now() + Math.floor(Math.random() * 10000),
+          merchantName: row.name,
+          status: row.status,
+          group: targetGroup,
+          assignee: '',
+          timezone: '',
+          oldSoftware: '',
+          website: '',
+          month: String(new Date().getMonth() + 1),
+          dataMigration: '',
+          paymentMigration: '',
+          widgetCustomization: '',
+          websiteIntegration: '',
+          accessControl: row.accessControl || '',
+          onboardingStatus: row.status === 'Live' ? 'Completed' : 'Not started',
+          comments: row.notes || '',
+          statusOfWork: '',
+          extraNotes: row.email ? 'Email: ' + row.email : '',
+          modules: [],
+          docs: [],
+          ghlUrl: '',
+          ghlUser: '',
+          ghlPass: '',
+          credCards: [],
+          brandedApp: isBrandedApp ? { pubIos: false, pubAndroid: false, screenSent: false, screenApproved: false } : {}
+        };
+        if (row.status === 'Live') newM.liveMonth = newM.month;
+        merchants.push(newM);
+        added++;
+      }
+    });
+
+    saveData(() => {
+      render();
+      if (currentPage === 'credentials') renderCredPage();
+      // Auto-filter to this group so user sees the result
+      setGroupFilter(targetGroup);
+      const msg = [];
+      if (added > 0) msg.push(`${added} new merchant${added > 1 ? 's' : ''} added`);
+      if (updated > 0) msg.push(`${updated} existing merchant${updated > 1 ? 's' : ''} updated`);
+      alert(`${targetGroup} import done!\n${msg.join(', ') || 'No changes made.'}`);
     });
   };
 
