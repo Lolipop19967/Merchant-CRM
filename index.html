@@ -1503,15 +1503,24 @@ function importData(event){
       const headers=parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim());
       // Map header names to merchant fields
       const fieldMap={
-        'status':'status','merchant':'merchantName','group':'group',
-        'assigned to':'assignee','month':'monthName','tz':'timezone',
-        'old software':'oldSoftware','website':'website',
-        'data mig':'dataMigration','payment mig':'paymentMigration',
-        'widget':'widgetCustomization','website int':'websiteIntegration',
-        'access control':'accessControl','onboarding':'onboardingStatus',
-        'modules':'modulesStr','comments':'comments','status of work':'statusOfWork',
+        'status':'status',
+        'merchant':'merchantName','merchant name':'merchantName','merchantname':'merchantName',
+        'business name':'merchantName','business':'merchantName','name':'merchantName',
+        'group':'group','group name':'group',
+        'assigned to':'assignee','assignee':'assignee','assigned':'assignee',
+        'month':'monthName','tz':'timezone','timezone':'timezone','time zone':'timezone',
+        'old software':'oldSoftware','oldsoftware':'oldSoftware','previous software':'oldSoftware',
+        'website':'website','website url':'website','site':'website',
+        'data mig':'dataMigration','data migration':'dataMigration','datamigration':'dataMigration',
+        'payment mig':'paymentMigration','payment migration':'paymentMigration',
+        'widget':'widgetCustomization','widget customization':'widgetCustomization',
+        'website int':'websiteIntegration','website integration':'websiteIntegration',
+        'access control':'accessControl','accesscontrol':'accessControl',
+        'onboarding':'onboardingStatus','onboarding status':'onboardingStatus','onboardingstatus':'onboardingStatus',
+        'modules':'modulesStr','comments':'comments','notes':'comments',
+        'status of work':'statusOfWork','statusofwork':'statusOfWork','work status':'statusOfWork',
+        'extra notes':'extraNotes','extranotes':'extraNotes',
         'ios link':'iosLink','android link':'androidLink',
-        // credentials columns (if present in a custom export)
         'ghl url':'ghlUrl','ghl user':'ghlUser','ghl username':'ghlUser',
         'ghl pass':'ghlPass','ghl password':'ghlPass'
       };
@@ -1520,7 +1529,9 @@ function importData(event){
         const cols=parseCSVLine(line);
         const obj={id:Date.now()+idx,docs:[],credCards:[],brandedApp:{}};
         headers.forEach((h,i)=>{
-          const field=fieldMap[h];
+          // exact match first, then try if any fieldMap key is contained in the header
+          let field=fieldMap[h];
+          if(!field){const k=Object.keys(fieldMap).find(k=>h.includes(k)||k.includes(h));field=k?fieldMap[k]:null;}
           if(!field)return;
           const val=cols[i]||'';
           if(field==='monthName'){
