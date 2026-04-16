@@ -1473,34 +1473,6 @@ function exportCSV(){
 function importData(event){
   const f=event.target.files[0];if(!f)return;
   const r=new FileReader();
-  function parseCSVLine(line){
-    const result=[];let cur='';let inQ=false;
-    for(let i=0;i<line.length;i++){
-      const c=line[i];
-      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
-      else if(c===','&&!inQ){result.push(cur);cur='';}
-      else{cur+=c;}
-    }
-    result.push(cur);
-    return result;
-  }
-  function normaliseStatus(s){
-    const v=(s||'').toLowerCase().trim();
-    if(v==='completed'||v==='live')return 'Live';
-    if(v==='in progress'||v==='inprogress')return 'In Progress';
-    if(v==='paused')return 'Paused';
-    if(v==='cancelled'||v==='canceled')return 'Cancelled';
-    return s||'In Progress';
-  }
-  function groupFromFilename(name){
-    const gm=name.match(/group[_\s-]*(\d)/i);
-    return gm?'Group '+gm[1]:'';
-  }
-  function assigneeFromFilename(name){
-    const parts=name.replace(/_/g,' ').split(/ - /);
-    if(parts.length>=2) return parts[1].replace(/  +/g,' & ').trim();
-    return '';
-  }
   r.onload=e=>{
     const text=e.target.result;
     // Try JSON first
@@ -1512,109 +1484,64 @@ function importData(event){
         merchants=d;saveData(()=>{render();if(currentPage==='credentials')renderCredPage();});return;
       }catch(err){/* fall through to CSV */}
     }
+    // Try CSV
     try{
       const lines=text.split('\n').map(l=>l.trim()).filter(l=>l);
       if(lines.length<2)throw new Error('Empty CSV');
+      // Parse a CSV line respecting quoted fields
+      function parseCSVLine(line){
+        const result=[];let cur='';let inQ=false;
+        for(let i=0;i<line.length;i++){
+          const c=line[i];
+          if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
+          else if(c===','&&!inQ){result.push(cur);cur='';}
+          else{cur+=c;}
+        }
+        result.push(cur);
+        return result;
+      }
       const headers=parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim());
-      // Detect Group CSV: has "merchant name" but no app-specific columns
-      const isGroupCSV=headers.includes('merchant name')&&!headers.includes('assigned to')&&!headers.includes('tz');
-      let d=[];
-      if(isGroupCSV){
-        const groupName=groupFromFilename(f.name);
-        const assignee=assigneeFromFilename(f.name);
-        const nameIdx=headers.findIndex(h=>h==='merchant name');
-        const statusIdx=headers.findIndex(h=>h==='status');
-        const notesIdx=headers.findIndex(h=>h==='notes');
-        const accessIdx=headers.findIndex(h=>h.includes('access control'));
-        const brandedIdx=headers.findIndex(h=>h.includes('branded app'));
-        const stripeIdx=headers.findIndex(h=>h.includes('stripe'));
-        const contactIdx=headers.findIndex(h=>h.includes('contact'));
-        const goLiveIdx=headers.findIndex(h=>h.includes('go live')||h.includes('go-live'));
-        d=lines.slice(1).map((line,idx)=>{
-          const cols=parseCSVLine(line);
-          const name=(cols[nameIdx]||'').trim();
-          if(!name)return null;
-          return {
-            id:Date.now()+idx+Math.floor(Math.random()*9999),
-            merchantName:name,
-            status:normaliseStatus(statusIdx>=0?cols[statusIdx]||'':''),
-            group:groupName,assignee,
-            timezone:'',oldSoftware:'',website:'',
-            dataMigration:'',paymentMigration:'',widgetCustomization:'',websiteIntegration:'',
-            accessControl:accessIdx>=0?(cols[accessIdx]||''):'',
-            onboardingStatus:'',
-            comments:notesIdx>=0?(cols[notesIdx]||''):'',
-            statusOfWork:'',extraNotes:'',modules:[],docs:[],credCards:[],
-            brandedApp:brandedIdx>=0?{published:(cols[brandedIdx]||'').toLowerCase()==='yes'}:{},
-            stripeTerminal:stripeIdx>=0?(cols[stripeIdx]||''):'',
-            contact:contactIdx>=0?(cols[contactIdx]||''):'',
-            goLiveDate:goLiveIdx>=0?(cols[goLiveIdx]||''):'',
-            month:''
-          };
-        }).filter(Boolean);
-      } else {
-        // App's own CSV format
-        const fieldMap={
-        'status':'status',
-        'merchant':'merchantName','merchant name':'merchantName','merchantname':'merchantName',
-        'business name':'merchantName','business':'merchantName','name':'merchantName',
-        'group':'group','group name':'group',
-        'assigned to':'assignee','assignee':'assignee','assigned':'assignee',
-        'month':'monthName','tz':'timezone','timezone':'timezone','time zone':'timezone',
-        'old software':'oldSoftware','oldsoftware':'oldSoftware','previous software':'oldSoftware',
-        'website':'website','website url':'website','site':'website',
-        'data mig':'dataMigration','data migration':'dataMigration','datamigration':'dataMigration',
-        'payment mig':'paymentMigration','payment migration':'paymentMigration',
-        'widget':'widgetCustomization','widget customization':'widgetCustomization',
-        'website int':'websiteIntegration','website integration':'websiteIntegration',
-        'access control':'accessControl','accesscontrol':'accessControl',
-        'onboarding':'onboardingStatus','onboarding status':'onboardingStatus','onboardingstatus':'onboardingStatus',
-        'modules':'modulesStr','comments':'comments','notes':'comments',
-        'status of work':'statusOfWork','statusofwork':'statusOfWork','work status':'statusOfWork',
-        'extra notes':'extraNotes','extranotes':'extraNotes',
+      // Map header names to merchant fields
+      const fieldMap={
+        'status':'status','merchant':'merchantName','group':'group',
+        'assigned to':'assignee','month':'monthName','tz':'timezone',
+        'old software':'oldSoftware','website':'website',
+        'data mig':'dataMigration','payment mig':'paymentMigration',
+        'widget':'widgetCustomization','website int':'websiteIntegration',
+        'access control':'accessControl','onboarding':'onboardingStatus',
+        'modules':'modulesStr','comments':'comments','status of work':'statusOfWork',
         'ios link':'iosLink','android link':'androidLink',
+        // credentials columns (if present in a custom export)
         'ghl url':'ghlUrl','ghl user':'ghlUser','ghl username':'ghlUser',
         'ghl pass':'ghlPass','ghl password':'ghlPass'
-        };
-        const monthNameToNum={'january':'1','february':'2','march':'3','april':'4','may':'5','june':'6','july':'7','august':'8','september':'9','october':'10','november':'11','december':'12'};
-        d=lines.slice(1).map((line,idx)=>{
-          const cols=parseCSVLine(line);
-          const obj={id:Date.now()+idx,docs:[],credCards:[],brandedApp:{}};
-          headers.forEach((h,i)=>{
-            let field=fieldMap[h];
-            if(!field){const k=Object.keys(fieldMap).find(k=>h.includes(k)||k.includes(h));field=k?fieldMap[k]:null;}
-            if(!field)return;
-            const val=cols[i]||'';
-            if(field==='monthName'){obj.month=monthNameToNum[val.toLowerCase()]||'';}
-            else if(field==='modulesStr'){obj.modules=val?val.split(',').map(s=>s.trim()).filter(Boolean):[];}
-            else if(field==='iosLink'){obj.brandedApp=obj.brandedApp||{};obj.brandedApp.iosLink=val;}
-            else if(field==='androidLink'){obj.brandedApp=obj.brandedApp||{};obj.brandedApp.androidLink=val;}
-            else if(field==='status'){obj.status=normaliseStatus(val);}
-            else{obj[field]=val;}
-          });
-          return obj;
-        }).filter(o=>o.merchantName||o.status);
-      }
+      };
+      const monthNameToNum={'january':'1','february':'2','march':'3','april':'4','may':'5','june':'6','july':'7','august':'8','september':'9','october':'10','november':'11','december':'12'};
+      const d=lines.slice(1).map((line,idx)=>{
+        const cols=parseCSVLine(line);
+        const obj={id:Date.now()+idx,docs:[],credCards:[],brandedApp:{}};
+        headers.forEach((h,i)=>{
+          const field=fieldMap[h];
+          if(!field)return;
+          const val=cols[i]||'';
+          if(field==='monthName'){
+            obj.month=monthNameToNum[val.toLowerCase()]||'';
+          } else if(field==='modulesStr'){
+            obj.modules=val?val.split(',').map(s=>s.trim()).filter(Boolean):[];
+          } else if(field==='iosLink'){
+            obj.brandedApp=obj.brandedApp||{};obj.brandedApp.iosLink=val;
+          } else if(field==='androidLink'){
+            obj.brandedApp=obj.brandedApp||{};obj.brandedApp.androidLink=val;
+          } else {
+            obj[field]=val;
+          }
+        });
+        return obj;
+      }).filter(o=>o.merchantName||o.status);
       if(!d.length)throw new Error('No valid rows');
-      let updated=0,added=0;
-      d.forEach(incoming=>{
-        const idx=merchants.findIndex(m=>
-          m.merchantName&&incoming.merchantName&&
-          m.merchantName.trim().toLowerCase()===incoming.merchantName.trim().toLowerCase()
-        );
-        if(idx>=0){
-          const merged={...merchants[idx]};
-          Object.keys(incoming).forEach(k=>{if(incoming[k]!==''&&incoming[k]!==null&&incoming[k]!==undefined)merged[k]=incoming[k];});
-          merchants[idx]=merged;updated++;
-        }else{merchants.push(incoming);added++;}
-      });
-      saveData(()=>{
-        render();
-        if(currentPage==='credentials')renderCredPage();
-        alert(`Import complete!\n${updated} merchant${updated!==1?'s':''} updated, ${added} new merchant${added!==1?'s':''} added.`);
-      });
+      if(!confirm(`Import ${d.length} merchants from CSV? This will replace current data.`))return;
+      merchants=d;saveData(()=>{render();if(currentPage==='credentials')renderCredPage();});
     }catch(err){
-      alert('Could not import file.\n\nError: '+err.message);
+      alert('Could not import file. Please use a JSON backup or the exported CSV from this app.');
     }
   };
   r.readAsText(f);event.target.value='';
