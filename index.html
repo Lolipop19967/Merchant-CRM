@@ -115,6 +115,7 @@ td.name { font-weight: 500; color: var(--text); }
 .badge-cancelled { background: var(--red-bg); color: var(--red); }
 .badge-paused { background: var(--amber-bg); color: var(--amber); }
 .group-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; border: 1px solid; white-space: nowrap; }
+.g1 { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.35); color: #a78bfa; }
 .g2 { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.35); color: #fbbf24; }
 .g3 { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.35); color: #4ade80; }
 .g4 { background: rgba(96,165,250,0.12); border-color: rgba(96,165,250,0.35); color: #60a5fa; }
@@ -306,6 +307,9 @@ td.name { font-weight: 500; color: var(--text); }
     <div class="sidebar-item" onclick="setGroupFilter('All')" id="fg-All">
       <span>All Groups</span><span class="count" id="fgc-All">0</span>
     </div>
+    <div class="sidebar-item" onclick="setGroupFilter('Group 1')" id="fg-Group 1">
+      <span>Group 1</span><span class="count" id="fgc-Group 1">0</span>
+    </div>
     <div class="sidebar-item" onclick="setGroupFilter('Group 2')" id="fg-Group 2">
       <span>Group 2</span><span class="count" id="fgc-Group 2">0</span>
     </div>
@@ -364,6 +368,7 @@ td.name { font-weight: 500; color: var(--text); }
       <span class="filter-label">Filters:</span>
       <select class="filter-select" id="filter-group" onchange="render()">
         <option value="">All Groups</option>
+        <option value="Group 1">Group 1</option>
         <option value="Group 2">Group 2</option>
         <option value="Group 3">Group 3</option>
         <option value="Group 4">Group 4</option>
@@ -446,11 +451,29 @@ td.name { font-weight: 500; color: var(--text); }
     <div class="topbar">
       <span class="topbar-title">Credentials</span>
       <div style="flex:1"></div>
-      <label class="btn btn-ghost" style="cursor:pointer" title="Upload spreadsheet with Business Name + New Passwords columns">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Upload Passwords
-        <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event)" style="display:none">
-      </label>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:0.06em">Upload by group:</span>
+        <label class="btn btn-ghost" style="cursor:pointer;font-size:12px;padding:6px 10px" title="Upload passwords for Group 1">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span style="color:#a78bfa">G1</span>
+          <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event,'Group 1')" style="display:none">
+        </label>
+        <label class="btn btn-ghost" style="cursor:pointer;font-size:12px;padding:6px 10px" title="Upload passwords for Group 2">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span style="color:#fbbf24">G2</span>
+          <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event,'Group 2')" style="display:none">
+        </label>
+        <label class="btn btn-ghost" style="cursor:pointer;font-size:12px;padding:6px 10px" title="Upload passwords for Group 3">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span style="color:#4ade80">G3</span>
+          <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event,'Group 3')" style="display:none">
+        </label>
+        <label class="btn btn-ghost" style="cursor:pointer;font-size:12px;padding:6px 10px" title="Upload passwords for Group 4">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span style="color:#60a5fa">G4</span>
+          <input type="file" accept=".xlsx,.xls,.csv" onchange="importPasswordSheet(event,'Group 4')" style="display:none">
+        </label>
+      </div>
       <div class="search-wrap">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="cred-search" placeholder="Search merchants…" oninput="renderCredPage()">
@@ -558,6 +581,7 @@ td.name { font-weight: 500; color: var(--text); }
               <label>Group</label>
               <select id="f-group">
                 <option value="">— No Group —</option>
+                <option value="Group 1">Group 1</option>
                 <option value="Group 2">Group 2</option>
                 <option value="Group 3">Group 3</option>
                 <option value="Group 4">Group 4</option>
@@ -567,6 +591,9 @@ td.name { font-weight: 500; color: var(--text); }
               <label>Assigned To</label>
               <select id="f-assignee">
                 <option value="">— Unassigned —</option>
+                <optgroup label="Group 1">
+                  <option value="Group1Member">Group 1 Member</option>
+                </optgroup>
                 <optgroup label="Group 2">
                   <option value="Aidan">Aidan</option>
                   <option value="Casey">Casey</option>
@@ -962,6 +989,7 @@ function getFiltered() {
 }
 
 function groupClass(g) {
+  if(g==='Group 1') return 'g1';
   if(g==='Group 2') return 'g2';
   if(g==='Group 3') return 'g3';
   if(g==='Group 4') return 'g4';
@@ -984,7 +1012,7 @@ function render() {
   `;
 
   ['All',...STATUSES].forEach(s=>{ const el=document.getElementById('fc-'+s); if(el)el.textContent=s==='All'?total:(counts[s]||0); });
-  ['Group 2','Group 3','Group 4'].forEach(g=>{ const el=document.getElementById('fgc-'+g); if(el)el.textContent=merchants.filter(m=>m.group===g).length; });
+  ['Group 1','Group 2','Group 3','Group 4'].forEach(g=>{ const el=document.getElementById('fgc-'+g); if(el)el.textContent=merchants.filter(m=>m.group===g).length; });
   const elA=document.getElementById('fgc-All'); if(elA)elA.textContent=total;
 
   const list = getFiltered();
@@ -2126,7 +2154,7 @@ function fuzzyMatch(a, b) {
   return total > 0 ? common / total : 0;
 }
 
-function importPasswordSheet(event) {
+function importPasswordSheet(event, targetGroup) {
   const f = event.target.files[0];
   if (!f) return;
   event.target.value = '';
@@ -2192,6 +2220,7 @@ function importPasswordSheet(event) {
 
       if (bestScore >= THRESHOLD && bestMerchant) {
         // Existing merchant found — update their GHL password
+        if (targetGroup && !bestMerchant.group) bestMerchant.group = targetGroup;
         if (bestMerchant.ghlUser || bestMerchant.ghlUrl || bestMerchant.ghlPass) {
           bestMerchant.ghlPass = row.pass;
         } else {
@@ -2211,7 +2240,7 @@ function importPasswordSheet(event) {
           id: Date.now() + Math.floor(Math.random() * 1000),
           merchantName: row.name,
           status: 'In Progress',
-          group: '',
+          group: targetGroup || '',
           assignee: '',
           timezone: '',
           oldSoftware: '',
@@ -2245,8 +2274,9 @@ function importPasswordSheet(event) {
       const parts = [];
       if (matched > 0) parts.push(`${matched} merchant${matched>1?'s':''} updated`);
       if (created > 0) parts.push(`${created} new merchant${created>1?'s':''} created`);
+      const groupLabel = targetGroup ? ` for ${targetGroup}` : '';
       const msg = parts.length > 0
-        ? `Done! ${parts.join(', ')}.`
+        ? `Done${groupLabel}! ${parts.join(', ')}.`
         : 'No data processed. Check that your file has "Business Name" and "Password" columns.';
       alert(msg);
     });
