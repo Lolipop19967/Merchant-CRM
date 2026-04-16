@@ -869,30 +869,9 @@ function saveData(cb) {
   localStorage.setItem('mccrm_v5', JSON.stringify(merchants));
   if (useFirebase && dbRef) {
     setSyncStatus('syncing','Saving…');
-    // Pause the live listener to prevent it overwriting our merchants array mid-write
-    dbRef.off('value');
     const obj = {};
-    merchants.forEach(m => { const k = (m._fbKey||String(m.id)).replace(/[.#$\/\[\]]/g,'_'); const c={...m}; delete c._fbKey; obj[k]=c; });
-    dbRef.set(obj).then(() => {
-      setSyncStatus('connected','Synced');
-      if (cb) cb();
-    }).catch(() => {
-      setSyncStatus('disconnected','Save failed');
-      if (cb) cb();
-    }).finally(() => {
-      // Re-attach the listener after write is done
-      dbRef.on('value', snap => {
-        const d = snap.val();
-        merchants = d ? Object.keys(d).map(k=>({...d[k],_fbKey:k})) : [];
-        localStorage.setItem('mccrm_v5', JSON.stringify(merchants));
-        setSyncStatus('connected','Synced to Firebase');
-        render();
-      }, err => {
-        setSyncStatus('disconnected','Sync error');
-        merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
-        render();
-      });
-    });
+    merchants.forEach(m => { const k = m._fbKey||String(m.id); const c={...m}; delete c._fbKey; obj[k]=c; });
+    dbRef.set(obj).then(()=>{setSyncStatus('connected','Synced');if(cb)cb();}).catch(()=>{setSyncStatus('disconnected','Save failed');if(cb)cb();});
   } else { if(cb)cb(); }
 }
 
@@ -2180,7 +2159,7 @@ function importPasswordSheet(event) {
     if (!rows.length) { alert('No data rows found in file.'); return; }
 
     // Match rows to merchants
-    let matched = 0, created = 0;
+    let matched = 0, skipped = 0;
     const THRESHOLD = 0.6;
 
     rows.forEach(row => {
@@ -2191,7 +2170,9 @@ function importPasswordSheet(event) {
       });
 
       if (bestScore >= THRESHOLD && bestMerchant) {
-        // Existing merchant found — update their GHL password
+        // Set the password on the merchant's GHL credentials
+        // If they already have a ghlPass or ghlUser, update ghlPass
+        // Otherwise add as a credential card named "Imported Password"
         if (bestMerchant.ghlUser || bestMerchant.ghlUrl || bestMerchant.ghlPass) {
           bestMerchant.ghlPass = row.pass;
         } else {
@@ -2201,53 +2182,20 @@ function importPasswordSheet(event) {
             existing.pass = row.pass;
           } else {
             if (!bestMerchant.credCards) bestMerchant.credCards = [];
-            bestMerchant.credCards.push({ id: Date.now() + Math.floor(Math.random() * 1000), name: 'Imported Password', link: '', user: '', pass: row.pass });
+            bestMerchant.credCards.push({ id: Date.now() + Math.random(), name: 'Imported Password', link: '', user: '', pass: row.pass });
           }
         }
         matched++;
       } else {
-        // No match — create a new merchant with this name and password
-        const newMerchant = {
-          id: Date.now() + Math.floor(Math.random() * 1000),
-          merchantName: row.name,
-          status: 'In Progress',
-          group: '',
-          assignee: '',
-          timezone: '',
-          oldSoftware: '',
-          website: '',
-          month: String(new Date().getMonth() + 1),
-          dataMigration: '',
-          paymentMigration: '',
-          widgetCustomization: '',
-          websiteIntegration: '',
-          accessControl: '',
-          onboardingStatus: '',
-          comments: '',
-          statusOfWork: '',
-          extraNotes: '',
-          modules: [],
-          docs: [],
-          ghlUrl: '',
-          ghlUser: '',
-          ghlPass: row.pass,
-          credCards: [],
-          brandedApp: {}
-        };
-        merchants.push(newMerchant);
-        created++;
+        skipped++;
       }
     });
 
     saveData(() => {
-      render();
       renderCredPage();
-      const parts = [];
-      if (matched > 0) parts.push(`${matched} merchant${matched>1?'s':''} updated`);
-      if (created > 0) parts.push(`${created} new merchant${created>1?'s':''} created`);
-      const msg = parts.length > 0
-        ? `Done! ${parts.join(', ')}.`
-        : 'No data processed. Check that your file has "Business Name" and "Password" columns.';
+      const msg = matched > 0
+        ? `Done! ${matched} merchant${matched>1?'s':''} updated.${skipped > 0 ? ' ' + skipped + ' row(s) had no matching merchant.' : ''}`
+        : 'No merchants matched. Check that business names in the spreadsheet match merchant names in the CRM.';
       alert(msg);
     });
   };
