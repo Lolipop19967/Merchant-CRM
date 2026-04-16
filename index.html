@@ -869,9 +869,30 @@ function saveData(cb) {
   localStorage.setItem('mccrm_v5', JSON.stringify(merchants));
   if (useFirebase && dbRef) {
     setSyncStatus('syncing','Saving…');
+    // Pause the live listener to prevent it overwriting our merchants array mid-write
+    dbRef.off('value');
     const obj = {};
     merchants.forEach(m => { const k = m._fbKey||String(m.id); const c={...m}; delete c._fbKey; obj[k]=c; });
-    dbRef.set(obj).then(()=>{setSyncStatus('connected','Synced');if(cb)cb();}).catch(()=>{setSyncStatus('disconnected','Save failed');if(cb)cb();});
+    dbRef.set(obj).then(() => {
+      setSyncStatus('connected','Synced');
+      if (cb) cb();
+    }).catch(() => {
+      setSyncStatus('disconnected','Save failed');
+      if (cb) cb();
+    }).finally(() => {
+      // Re-attach the listener after write is done
+      dbRef.on('value', snap => {
+        const d = snap.val();
+        merchants = d ? Object.keys(d).map(k=>({...d[k],_fbKey:k})) : [];
+        localStorage.setItem('mccrm_v5', JSON.stringify(merchants));
+        setSyncStatus('connected','Synced to Firebase');
+        render();
+      }, err => {
+        setSyncStatus('disconnected','Sync error');
+        merchants = JSON.parse(localStorage.getItem('mccrm_v5')||'[]');
+        render();
+      });
+    });
   } else { if(cb)cb(); }
 }
 
